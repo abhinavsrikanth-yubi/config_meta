@@ -1,0 +1,205 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if form.instance.pk %}Update{% else %}Create{% endif %} Config</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .remove-btn { min-width: 2.5rem; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{% if form.instance.pk %}Update{% else %}Create{% endif %} Config</h4>
+                </div>
+                <div class="card-body">
+                  <form method="post" id="config-form" autocomplete="off">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.state_id.label_tag }}
+{% if form.state_id.errors %}
+    {{ form.state_id|add_class:"form-control is-invalid" }}
+    <div class="invalid-feedback d-block">{{ form.state_id.errors.0 }}</div>
+{% else %}
+    {{ form.state_id|add_class:"form-control" }}
+{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.question_id.label_tag }}
+{% if form.question_id.errors %}
+    {{ form.question_id|add_class:"form-control is-invalid" }}
+    <div class="invalid-feedback d-block">{{ form.question_id.errors.0 }}</div>
+{% else %}
+    {{ form.question_id|add_class:"form-control" }}
+{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.job_id.label_tag }}
+{% if form.job_id.errors %}
+    {{ form.job_id|add_class:"form-control is-invalid" }}
+    <div class="invalid-feedback d-block">{{ form.job_id.errors.0 }}</div>
+{% else %}
+    {{ form.job_id|add_class:"form-control" }}
+{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.task_id.label_tag }}
+{% if form.task_id.errors %}
+    {{ form.task_id|add_class:"form-control is-invalid" }}
+    <div class="invalid-feedback d-block">{{ form.task_id.errors.0 }}</div>
+{% else %}
+    {{ form.task_id|add_class:"form-control" }}
+{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.siac_id.label_tag }}
+                        {% if form.siac_id.errors %}
+    <input type="text" name="siac_id" id="id_siac_id" class="form-control is-invalid"
+           value="{{ form.initial.siac_id|default:form.instance.siac_id|default:'' }}"
+           placeholder="e.g. 1,2,3,4">
+    <div class="invalid-feedback d-block">{{ form.siac_id.errors.0 }}</div>
+{% else %}
+    <input type="text" name="siac_id" id="id_siac_id" class="form-control"
+           value="{{ form.initial.siac_id|default:form.instance.siac_id|default:'' }}"
+           placeholder="e.g. 1,2,3,4">
+{% endif %}
+                        <div class="form-text">Enter SIAC IDs as comma-separated values.</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.possible_options.label_tag }}
+                        <input type="text" name="possible_options" id="id_possible_options" class="form-control"
+                               value="{% if form.initial.possible_options %}{{ form.initial.possible_options }}{% elif form.instance.possible_options %}{% if form.instance.possible_options.0 %}{{ form.instance.possible_options|join:', ' }}{% else %}{{ form.instance.possible_options }}{% endif %}{% else %}{% endif %}"
+                               placeholder="e.g. Yes, No, Maybe">
+                        <div class="form-text">Enter options separated by commas.</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.default_option.label_tag }} {{ form.default_option|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.parent_question_operator.label_tag }} {{ form.parent_question_operator|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.parent_option_condition.label_tag }} {{ form.parent_option_condition|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.category.label_tag }} {{ form.category|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.enable_task_response.label_tag }} {{ form.enable_task_response|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.entity_type.label_tag }} {{ form.entity_type|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.question_type.label_tag }} {{ form.question_type|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.attributes.label_tag }} {{ form.attributes|add_class:"form-control" }}
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label ms-2" for="{{ form.is_active.id_for_label }}">
+                            Is active
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        {{ form.skip_trigger }}
+                        <label class="form-check-label ms-2" for="{{ form.skip_trigger.id_for_label }}">
+                            Skip Trigger
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.id.label_tag }} {{ form.id|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.config_id.label_tag }} {{ form.config_id|add_class:"form-control" }}  
+                    </div>
+                    <hr>
+                    <!-- Parent Response Condition Dynamic Section -->
+                    <label class="form-label mt-3">Parent Response Condition</label>
+                    <div id="parent-response-list">
+    {% if parent_response_items %}
+        {% for qid, resp in parent_response_items.items %}
+            <div class="row mb-2 parent-response-row">
+                <div class="col-md-5">
+                    <select name="parent_question" class="form-select parent-question">
+                        {% for q in questions %}
+                            <option value="{{ q.question_id }}" {% if q.question_id|stringformat:'s' == qid|stringformat:'s' %}selected{% endif %}>{{ q.question_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="parent_response" class="form-control parent-response" value="{% if resp.0 %}{{ resp.0 }}{% else %}{{ resp }}{% endif %}" placeholder="Response">
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                    <button type="button" class="btn btn-danger remove-parent-row" title="Remove">-</button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+                    <button type="button" id="add-parent-btn" class="btn btn-outline-primary btn-sm mt-2 mb-3">+ Add Condition</button>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success w-100">{% if form.instance.pk %}Update{% else %}Create{% endif %}</button>
+                    </div>
+                    {% if is_update and not form.changed_data %}
+                        <div class="alert alert-info mt-3" role="alert">
+                            No changes made.
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dynamic Parent Response Condition logic
+    function addParentResponseRow(qid='', resp='') {
+        const row = document.createElement('div');
+        row.className = 'row mb-2 parent-response-row';
+        row.innerHTML = `
+            <div class="col-md-5">
+                <select name="parent_question" class="form-select parent-question">
+                    {% for q in questions %}
+                        <option value="{{ q.question_id }}">{{ q.question_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <input type="text" name="parent_response" class="form-control parent-response" value="${resp}" placeholder="Response">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger remove-parent-row">-</button>
+            </div>
+        `;
+        document.getElementById('parent-response-list').appendChild(row);
+    }
+
+    document.getElementById('add-parent-btn').addEventListener('click', function() {
+        addParentResponseRow();
+    });
+
+    document.getElementById('parent-response-list').addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-parent-row')) {
+            e.target.closest('.parent-response-row').remove();
+        }
+    });
+});
+</script>
+</body>
+</html>

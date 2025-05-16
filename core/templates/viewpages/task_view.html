@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Master View</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row mb-3">
+            <div class="col text-start">
+                <a href="{% url 'task_create' %}" class="btn btn-primary">+ Create Task</a>
+            </div>
+        </div>
+    
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Task Master List</h3>
+                </div>
+                <div class="card-body position-relative">
+                    <input type="text" id="task-search" class="form-control mb-3" placeholder="Search task ID, name, etc...">
+                    <div id="task-list"></div>
+                    <nav>
+                        <ul class="pagination justify-content-center" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Bottom Back Button -->
+<div class="d-flex justify-content-center my-4">
+    <a href="/" class="btn btn-secondary">Back</a>
+</div>
+<script>
+let currentPage = 1;
+let currentQuery = '';
+
+function fetchTasks(page=1, query='') {
+    fetch(`/task/search/?page=${page}&q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+            rendertaskList(data.results);
+            renderPagination(data.current_page, data.num_pages, query);
+        });
+}
+
+function rendertaskList(tasks) {
+    let list = document.getElementById('task-list');
+    if (tasks.length === 0) {
+        list.innerHTML = '<div class="alert alert-warning">No results found</div>';
+        return;
+    }
+    let table = `<table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Task ID</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${tasks.map(item => `
+                <tr>
+                    <td>${item.label}</td>
+                    <td>
+    <a href="/task/${item.id}/" class="btn btn-sm btn-primary">View</a>
+    {% if perms.core.change_taskmaster %}
+<a href="/task/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
+{% endif %}
+</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>`;
+    list.innerHTML = table;
+}
+
+function renderPagination(current, total, query) {
+    let pag = document.getElementById('pagination');
+    let items = '';
+    let maxPages = 10;
+    let half = Math.floor(maxPages / 2);
+
+    let start = Math.max(1, current - half);
+    let end = start + maxPages - 1;
+    if (end > total) {
+        end = total;
+        start = Math.max(1, end - maxPages + 1);
+    }
+
+    // Prev arrow (to previous window)
+    if (start > 1) {
+        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchTasks(${start - 1});return false;">&lt;</a></li>`;
+    }
+
+    // Page numbers
+    for (let i = start; i <= end; i++) {
+        items += `<li class="page-item${i === current ? ' active' : ''}"><a class="page-link" href="#" onclick="fetchTasks(${i});return false;">${i}</a></li>`;
+    }
+
+    // Next arrow (to next window)
+    if (end < total) {
+        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchTasks(${end + 1});return false;">&gt;</a></li>`;
+    }
+
+    pag.innerHTML = items;
+}
+document.getElementById('task-search').addEventListener('input', function() {
+    currentQuery = this.value;
+    fetchTasks(1, currentQuery);
+});
+
+// Initial load
+fetchTasks();
+</script>
+</body>
+</html>

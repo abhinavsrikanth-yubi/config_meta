@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Config Meta Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .home-card {
+            transition: box-shadow .2s;
+        }
+        .home-card:hover {
+            box-shadow: 0 0 20px #007bff33;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 mb-4">Config Meta Dashboard</h1>
+            <p class="lead">Select a module to manage:</p>
+        </div>
+    </div>
+    <div class="row justify-content-center g-4">
+        <div class="col-md-4">
+            <a href="{% url 'job_list' %}" class="text-decoration-none">
+                <div class="card home-card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">Job Master</h4>
+                        <p class="card-text">Manage job configurations</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'siac_list' %}" class="text-decoration-none">
+                <div class="card home-card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">SIAC Master</h4>
+                        <p class="card-text">Manage SIAC configurations</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'question_list' %}" class="text-decoration-none">
+                <div class="card home-card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">Question Master</h4>
+                        <p class="card-text">Manage questions</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'state_list' %}" class="text-decoration-none">
+                <div class="card home-card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">State Master</h4>
+                        <p class="card-text">Manage state configurations</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'task_list' %}" class="text-decoration-none">
+                <div class="card home-card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">Task Master</h4>
+                        <p class="card-text">Manage tasks</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'config_list' %}" class="text-decoration-none">
+                <div class="card home-card text-center">
+                    <div class="card-body">
+                        <h4 class="card-title">Config Master</h4>
+                        <p class="card-text">Manage general configs</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

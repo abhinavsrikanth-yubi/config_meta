@@ -1,0 +1,28 @@
+<!-- viewpages/question_detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container py-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Job Details</h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item"><strong>ID:</strong> {{ job.job_id }}</li>
+                <li class="list-group-item"><strong>Name:</strong> {{ job.job_name }}</li>
+                <li class="list-group-item"><strong>Conditions:</strong> {{ job.conditions }}</li>
+                <li class="list-group-item"><strong>System Indentifier:</strong> {{ job.system_identifier }}</li>
+                <li class="list-group-item"><strong>Created At:</strong> {{ job.created_at }}</li>
+                <li class="list-group-item"><strong>Updated At:</strong> {{ job.updated_at }}</li>
+                <!-- Add other fields as needed -->
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

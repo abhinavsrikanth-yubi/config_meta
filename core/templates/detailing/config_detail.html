@@ -1,0 +1,43 @@
+<!-- viewpages/question_detail.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Config Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container py-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Config Details</h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Config ID:</strong> {{ config.config_id }}</li>
+                <li class="list-group-item"><strong>SIAC ID:</strong> {{ config.siac_id }}</li>
+                <li class="list-group-item"><strong>State ID:</strong> {{ config.state_id }}</li>
+                <li class="list-group-item"><strong>Question ID:</strong> {{ config.question_id }}</li>
+                <li class="list-group-item"><strong>Task ID:</strong> {{ config.task_id }}</li>
+                <li class="list-group-item"><strong>Job ID:</strong> {{ config.job_id }}</li>
+                <li class="list-group-item"><strong>Created At:</strong> {{ config.created_at }}</li>
+                <li class="list-group-item"><strong>Updated At:</strong> {{ config.updated_at }}</li>
+                <li class="list-group-item"><strong>Attributes:</strong> {{ config.attributes }}</li>
+                <li class="list-group-item"><strong>Parent Question Operator:</strong> {{ config.parent_question_operator }}</li>
+                <li class="list-group-item"><strong>Default Option:</strong> {{ config.default_option }}</li>
+                <li class="list-group-item"><strong>Entity Type:</strong> {{ config.entity_type }}</li>
+                <li class="list-group-item"><strong>Category:</strong> {{ config.category }}</li>
+                <li class="list-group-item"><strong>Question Type:</strong> {{ config.question_type }}</li>
+                <li class="list-group-item"><strong>Parent Option Condition:</strong> {{ config.parent_option_condition }}</li>
+                <li class="list-group-item"><strong>Is Active:</strong> {{ config.is_active }}</li>
+                <li class="list-group-item"><strong>Config ID:</strong> {{ config.config_id }}</li>
+                <li class="list-group-item"><strong>Skip Trigger</strong> {{ config.skip_trigger }}</li>
+                <li class="list-group-item"><strong>Possible Options:</strong> {{ config.possible_options }}</li>
+                
+                <!-- <li class="list-group-item"><strong>Name:</strong> {{ config.config_name }}</li> -->
+                <!-- Add other fields as needed -->
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{% load static %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Master List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row mb-3">
+        <div class="col text-start">
+            <a href="{% url 'config_create' %}" class="btn btn-primary">+ Create Config</a>
+        </div>
+        <div class="col text-end">
+            <a href="/" class="btn btn-secondary">Back</a>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Config Master List</h3>
+        </div>
+        <div class="card-body position-relative">
+            <form class="row g-2 mb-3" id="search-form">
+                <div class="col-md-2">
+                    <input type="text" name="config_id" class="form-control" placeholder="Config ID">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="siac" class="form-control" placeholder="SIAC ID/Description">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="state" class="form-control" placeholder="State ID/Name">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="question" class="form-control" placeholder="Question ID/Name">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="task" class="form-control" placeholder="Task ID/Name">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="job" class="form-control" placeholder="Job ID/Name">
+                </div>
+            </form>
+            <div id="config-list"></div>
+            <nav>
+                <ul class="pagination justify-content-center" id="pagination"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+<script>
+let currentPage = 1;
+let currentQuery = {};
+
+function fetchConfigs(page=1, query={}) {
+    let params = new URLSearchParams({page, ...query});
+    fetch(`/config/search/?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+            renderConfigList(data.results);
+            renderPagination(data.current_page, data.num_pages, query);
+        });
+}
+
+function renderConfigList(configs) {
+    let list = document.getElementById('config-list');
+    if (configs.length === 0) {
+        list.innerHTML = '<div class="alert alert-warning">No results found</div>';
+        return;
+    }
+    let table = `<table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Config ID</th>
+                <th>State ID</th>
+                <th>SIAC ID(s)</th>
+                <th>Question ID</th>
+                <th>Task ID</th>
+                <th>Job ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${configs.map(item => `
+                <tr>
+                   <td>${item.id && item.id !== 'undefined' ? item.id : ''}</td>
+                    <td>${item.state_id}</td>
+                    <td>${item.siac_id}</td>
+                    <td>${item.question_id}</td>
+                    <td>${item.task_id}</td>
+                    <td>${item.job_id}</td>
+                    <td>
+                        <a href="/config/${encodeURIComponent(item.id)}/" class="btn  btn-info btn-sm">View</a>
+                        <a href="/config/update/${encodeURIComponent(item.id)}/" class="btn btn-warning btn-sm">Update</a>
+                    </td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>`;
+    list.innerHTML = table;
+}
+
+function renderPagination(current, total, query) {
+    let pag = document.getElementById('pagination');
+    let items = '';
+    let maxPages = 10;
+    let half = Math.floor(maxPages / 2);
+    let start = Math.max(1, current - half);
+    let end = start + maxPages - 1;
+    if (end > total) {
+        end = total;
+        start = Math.max(1, end - maxPages + 1);
+    }
+    if (start > 1) {
+        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchConfigs(${start - 1}, currentQuery);return false;">&lt;</a></li>`;
+    }
+    for (let i = start; i <= end; i++) {
+        items += `<li class="page-item${i === current ? ' active' : ''}"><a class="page-link" href="#" onclick="fetchConfigs(${i}, currentQuery);return false;">${i}</a></li>`;
+    }
+    if (end < total) {
+        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchConfigs(${end + 1}, currentQuery);return false;">&gt;</a></li>`;
+    }
+    pag.innerHTML = items;
+}
+
+document.getElementById('search-form').addEventListener('input', function() {
+    let formData = new FormData(this);
+    currentQuery = Object.fromEntries(formData.entries());
+    fetchConfigs(1, currentQuery);
+});
+
+// Initial load
+fetchConfigs();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
