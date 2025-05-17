@@ -13,9 +13,16 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required, user_passes_test
 
+
+@login_required
 def index(request):
     return render(request, 'index.html')
+
+def is_product(user):
+    return user.groups.filter(name='Product').exists()
+
 
 def get_master_results(request):
     """Display results for existing masters"""
@@ -66,7 +73,8 @@ def question_master_view(request):
     else:
         form = QuestionMasterForm()
     return render(request, 'createpages/question.html', {'form': form})
-
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
 
 # List view for all jobs
 # from django.shortcuts import get_object_or_404
@@ -82,7 +90,7 @@ def job_detail_view(request, pk):
     return render(request, 'detailing/job_detail.html', {'job': job})
 
 # Unified create/update view
-
+@user_passes_test(is_product)
 def job_master_view(request, pk=None):
     if pk:
         job = get_object_or_404(JobMaster, job_id=pk)
@@ -116,6 +124,9 @@ def job_master_view(request, pk=None):
     else:
         form = JobMasterForm(instance=job)
     return render(request, 'createpages/job.html', {'form': form, 'job': job, 'is_update': is_update})
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
+
 
 from django.shortcuts import get_object_or_404
 
@@ -128,6 +139,7 @@ def task_detail_view(request, pk):
     task = get_object_or_404(TaskMaster, task_id=pk)
     return render(request, 'detailing/task_detail.html', {'task': task})
 
+@user_passes_test(is_product)
 def task_master_view(request, pk=None):
     if pk:
         task = get_object_or_404(TaskMaster, task_id=pk)
@@ -159,7 +171,10 @@ def task_master_view(request, pk=None):
     else:
         form = TaskMasterForm(instance=task)
     return render(request, 'createpages/task.html', {'form': form, 'task': task, 'is_update': is_update})
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
 
+    
 # --- State Master ---
 def state_list_view(request):
     states = StateMaster.objects.all()
@@ -169,6 +184,7 @@ def state_detail_view(request, pk):
     state = get_object_or_404(StateMaster, state_id=pk)
     return render(request, 'detailing/state_detail.html', {'state': state})
 
+@user_passes_test(is_product)
 def state_master_view(request, pk=None):
     if pk:
         state = get_object_or_404(StateMaster, state_id=pk)
@@ -200,6 +216,8 @@ def state_master_view(request, pk=None):
     else:
         form = StateMasterForm(instance=state)
     return render(request, 'createpages/state.html', {'form': form, 'state': state, 'is_update': is_update})
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
 
 # --- SIAC Master ---
 def siac_list_view(request):
@@ -210,6 +228,7 @@ def siac_detail_view(request, pk):
     siac = get_object_or_404(SiacMaster, siac_id=pk)
     return render(request, 'detailing/siac_detail.html', {'siac': siac})
 
+@user_passes_test(is_product)
 def siac_master_view(request, pk=None):
     if pk:
         siac = get_object_or_404(SiacMaster, siac_id=pk)
@@ -241,6 +260,8 @@ def siac_master_view(request, pk=None):
     else:
         form = SiacMasterForm(instance=siac)
     return render(request, 'createpages/siac.html', {'form': form, 'siac': siac, 'is_update': is_update})
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
 
 # --- Question Master ---
 def question_list_view(request):
@@ -251,6 +272,7 @@ def question_detail_view(request, pk):
     question = get_object_or_404(QuestionMaster, question_id=pk)
     return render(request, 'detailing/question_detail.html', {'question': question})
 
+@user_passes_test(is_product)
 def question_master_view(request, pk=None):
     if pk:
         question = get_object_or_404(QuestionMaster, question_id=pk)
@@ -282,7 +304,8 @@ def question_master_view(request, pk=None):
     else:
         form = QuestionMasterForm(instance=question)
     return render(request, 'createpages/question.html', {'form': form, 'question': question, 'is_update': is_update})
-
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
 
 
 # --- Config Master ---
@@ -337,6 +360,40 @@ from django.forms.models import model_to_dict
 from django.db.models.functions import Cast
 from django.db.models import CharField, Q
 
+#question_search
+
+def question_search_api(request):
+    q = request.GET.get('q', '').strip()
+    page = int(request.GET.get('page', 1))
+    per_page = 10
+
+    questions = QuestionMaster.objects.all()
+    if q:
+        questions = questions.filter(
+            Q(question_id__icontains=q) | Q(question_name__icontains=q)
+        )
+
+    total = questions.count()
+    start = (page - 1) * per_page
+    end = start + per_page
+    results = [
+        {
+            "id": q.question_id,
+            "label": f"{q.question_id} - {q.question_name}",
+        }
+        for q in questions[start:end]
+    ]
+    num_pages = (total + per_page - 1) // per_page
+
+    return JsonResponse({
+        "results": results,
+        "current_page": page,
+        "num_pages": num_pages,
+        "total": total,
+    })
+
+
+#config_search
 def config_search_api(request):
     siac = request.GET.get('siac', '').strip()
     state = request.GET.get('state', '').strip()
@@ -392,136 +449,14 @@ def config_search_api(request):
         "current_page": page_obj.number,
         "num_pages": paginator.num_pages,
     })
+    if not request.user.groups.filter(name='product').exists():
+        return HttpResponseForbidden("You do not have permission to create configs.")
 
 def config_detail_view(request, pk):
     config = get_object_or_404(ConfigMetas, config_id=pk)
     return render(request, 'detailing/config_detail.html', {'config': config})
 
-
-# def config_data_view(request):
-#     if request.method == 'POST':
-#         print("\n=== Form Submission ===")
-#         print("Raw POST data:", dict(request.POST))
-#         new_config_id = request.POST.get('config_id')
-#         # Check if the new config_id already exists (not just the current config)
-#         try:
-#             config_instance = ConfigMetas.objects.get(config_id=new_config_id)
-#             existed = True
-#         except ConfigMetas.DoesNotExist:
-#             config_instance = None
-#             existed = False
-
-#         form = ConfigMetaForm(request.POST, instance=config_instance)
-#         formset = ParentResponseFormSet(request.POST, prefix='parent_response')
-#         parent_response_dict = {}
-#         if form.is_valid() and formset.is_valid():
-#             config_obj = form.save(commit=False)
-#             config_obj.parent_response_condition = parent_response_dict
-#             config_obj.save()
-#             # Build the parent_response_condition dictionary from the formset
-#             for f in formset:
-#                 if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
-#                     q = f.cleaned_data.get('question')
-#                     a = f.cleaned_data.get('answer')
-#                     if q and a:
-#                         parent_response_dict[str(q.question_id)] = [a.strip()]
-#             # Show appropriate success message
-#             if existed:
-#                 messages.success(request, f"Existing config_id: {config_obj.config_id} is updated")
-#             else:
-#                 messages.success(request, f"Config ID: {config_obj.config_id} created successfully")
-#             return redirect('config_update', pk=config_obj.config_id)
-
-#             config_instance = form.save(commit=False)
-#             config_instance.parent_response_condition = parent_response_dict
-#             config_instance.save()
-
-
-#             cleaned = form.cleaned_data
-#             state_id = cleaned.get('state_id')
-#             question_id = cleaned.get('question_id')
-#             job_id = cleaned.get('job_id')
-#             task_id = cleaned.get('task_id')
-#             siac_ids = cleaned.get('siac_id') or []
-#             possible_options = cleaned.get('possible_options', [])
-#             parent_option_condition = cleaned.get('parent_option_condition')
-#             parent_question_operator = cleaned.get('parent_question_operator')
-#             category = cleaned.get('category')
-#             enable_task_response = cleaned.get('enable_task_response')
-#             entity_type = cleaned.get('entity_type')
-#             question_type = cleaned.get('question_type')
-#             attributes = cleaned.get('attributes')
-#             is_active = cleaned.get('is_active')
-
-#             # Validate master IDs before creating any configs
-#             if not all([
-#                 StateMaster.objects.filter(state_id=state_id).exists() if state_id is not None else True,
-#                 QuestionMaster.objects.filter(question_id=question_id).exists() if question_id is not None else True,
-#                 JobMaster.objects.filter(job_id=job_id).exists() if job_id is not None else True,
-#                 TaskMaster.objects.filter(task_id=task_id).exists() if task_id is not None else True
-#             ]):
-#                 print("Error: One or more master IDs do not exist")
-#                 messages.error(request, 'One or more master IDs do not exist')
-#                 return render(request, 'config.html', {'form': form, 'formset': formset})
-
-#             base_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
-#             created_ids = []
-#             updated_ids = []
-#             possible_options_list = possible_options if isinstance(possible_options, list) else [possible_options]
-
-#             for siac_id in siac_ids:
-#                 config_id = f"{base_id}-{siac_id[0]}"
-#                 try:
-#                     obj, created = ConfigMetas.objects.update_or_create(
-#                         config_id=config_id,
-#                         defaults={
-#                             'siac_id': str(siac_id[0]),
-#                             'state_id': state_id,
-#                             'question_id': question_id,
-#                             'job_id': job_id,
-#                             'task_id': task_id,
-#                             'possible_options': possible_options_list,
-#                             'parent_option_condition': parent_option_condition,
-#                             'parent_response_condition': parent_response_dict,
-#                             'parent_question_operator': parent_question_operator,
-#                             'category': category,
-#                             'enable_task_response': enable_task_response,
-#                             'entity_type': entity_type,
-#                             'question_type': question_type,
-#                             'attributes': attributes,
-#                             'is_active': is_active,
-#                         }
-#                     )
-#                     if created:
-#                         created_ids.append(config_id)
-#                     else:
-#                         updated_ids.append(config_id)
-#                 except IntegrityError:
-#                     updated_ids.append(config_id)
-#                 except Exception as e:
-#                     print(f"Error creating/updating config for SIAC ID {siac_id}:", str(e))
-#                     messages.error(request, f'Error creating/updating config for SIAC ID {siac_id}: {str(e)}')
-#                     return render(request, 'config.html', {'form': form, 'formset': formset})
-
-#             msg = ""
-#             if created_ids:
-#                 msg += f"New config_id(s) created: {', '.join(created_ids)}. "
-#             if updated_ids:
-#                 msg += f"Existing config_id(s) updated: {', '.join(updated_ids)}."
-#             if msg:
-#                 messages.success(request, msg)
-#             else:
-#                 messages.info(request, "No configs created or updated.")
-#             return redirect('config_data_view')
-#         else:
-#             print("\n=== Form Errors ===")
-#             print("Form errors:", form.errors)
-#             messages.error(request, 'Form validation failed')
-#     else:
-#         form = ConfigMetaForm()
-#         formset = ParentResponseFormSet(prefix='parent_response')
-
-#     return render(request, 'createpages/config.html', {'form': form, 'formset': formset})
+@user_passes_test(is_product)
 def config_create_view(request):
     print("CREATE VIEW CALLED", request.method)
     from .models import QuestionMaster
@@ -612,6 +547,7 @@ def config_create_view(request):
             'questions': questions,
         })
 
+@user_passes_test(is_product)
 def config_update_view(request, pk):
     from .models import QuestionMaster
     questions = QuestionMaster.objects.all()
@@ -1069,4 +1005,55 @@ class ConfigMetaAPI(APIView):
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+@login_required
+def account_info(request):
+    if request.method == 'POST':
+        user = request.user
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+        changed = False
+        password_changed = False
+        # Only allow username change
+        if username and username != user.username:
+            user.username = username
+            changed = True
+        # Handle password update with confirmation
+        if password or password2:
+            if password != password2:
+                messages.error(request, "Passwords do not match.")
+                return redirect('index')
+            if password:
+                user.set_password(password)
+                password_changed = True
+                changed = True
+        user.save()
+        # Prepare updated info for email
+        group_names = ", ".join([g.name for g in user.groups.all()])
+        if changed:
+            # Send email notification
+            send_mail(
+                subject="Your Account Info Was Updated",
+                message=f"Hello {user.username},\n\nYour account information has been updated.\n\nUsername: {user.username}\nEmail: {user.email}\nUser Groups: {group_names}\n",
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@example.com'),
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+            if password_changed:
+                messages.success(request, "Password updated successfully. A confirmation email has been sent.")
+            else:
+                messages.success(request, "Account info updated! A confirmation email has been sent.")
+        else:
+            messages.info(request, "No changes made.")
+        return redirect('index')
+    return redirect('index')
+
     

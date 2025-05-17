@@ -1,3 +1,4 @@
+{% load group_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +11,9 @@
     <div class="container py-5">
         <div class="row mb-3">
             <div class="col text-start">
+                {% if user.is_superuser or user|has_group:"Product" %}
                 <a href="{% url 'task_create' %}" class="btn btn-primary">+ Create Task</a>
+                {% endif %}
             </div>
         </div>
     
@@ -67,11 +70,11 @@ function rendertaskList(tasks) {
                 <tr>
                     <td>${item.label}</td>
                     <td>
-    <a href="/task/${item.id}/" class="btn btn-sm btn-primary">View</a>
-    {% if perms.core.change_taskmaster %}
-<a href="/task/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
-{% endif %}
-</td>
+                        <a href="/task/${item.id}/" class="btn btn-sm btn-primary">View</a>
+                        {% if user.is_superuser or user|has_group:"Product" %}
+                        <a href="/task/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
+                        {% endif %}
+                    </td>
                 </tr>
             `).join('')}
         </tbody>

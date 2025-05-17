@@ -1,3 +1,4 @@
+{% load group_filters %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +12,9 @@
     <div class="container py-5">
         <div class="row mb-3">
             <div class="col text-start">
+                {% if user.is_superuser or user|has_group:"Product" %}
                 <a href="{% url 'job_create' %}" class="btn btn-primary">+ Create Job</a>
+                {% endif %}
             </div>
         </div>
         <div class="row justify-content-center">
@@ -66,11 +69,11 @@ function renderJobList(jobs) {
                 <tr>
                     <td>${item.label}</td>
                     <td>
-    <a href="/job/${item.id}/" class="btn btn-sm btn-primary">View</a>
-    {% if perms.core.change_jobmaster %}
-<a href="/job/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
-{% endif %}
-</td>
+                        <a href="/job/${item.id}/" class="btn btn-sm btn-primary">View</a>
+                        {% if user.is_superuser or user|has_group:"Product" %}
+                        <a href="/job/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
+                        {% endif %}
+                    </td>
                 </tr>
             `).join('')}
         </tbody>

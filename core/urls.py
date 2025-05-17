@@ -1,7 +1,8 @@
 from django.urls import path, register_converter
 from django.contrib import admin
-from .views import job_master_view, question_master_view,task_master_view,state_master_view,siac_master_view, index, get_master_results, job_list_view, job_detail_view , debug_view, task_list_view, task_detail_view, state_list_view, state_detail_view, siac_list_view, siac_detail_view, question_list_view, question_detail_view, config_list_view, config_detail_view, config_redirect_view
-from .views import config_list_view, config_create_view, config_update_view, config_detail_view
+from .views import job_master_view, question_master_view,task_master_view,state_master_view,siac_master_view, index, get_master_results, job_list_view, job_detail_view , debug_view, task_list_view, task_detail_view, state_list_view, state_detail_view, siac_list_view, siac_detail_view, question_list_view, question_detail_view, config_list_view, config_detail_view, config_redirect_view, question_search_api
+from .views import config_list_view, config_create_view, config_update_view, config_detail_view, index, account_info
+from django.contrib.auth import views as auth_views
 
 from . import viewpage,updatepage
 
@@ -28,6 +29,10 @@ register_converter(ConfigIDConverter, 'config_id')
 register_converter(SignedIntConverter, 'signedint')
 
 urlpatterns = [
+    #login
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('account/info/', account_info, name='account_info'),
     path('', index, name='index'),
     # Job URLs
     path('job/', job_master_view, name='job_master'),
@@ -52,6 +57,7 @@ urlpatterns = [
     path('siac/update/<signedint:pk>/', siac_master_view, name='siac_update'),
     path('siac/<signedint:pk>/', siac_detail_view, name='siac_detail'),
     # Question URLs
+    path('question/search/', question_search_api, name='question_search_api'),
     path('question/view/', question_list_view, name='question_list'),
     path('question/create/', question_master_view, name='question_create'),
     path('question/update/<signedint:pk>/', question_master_view, name='question_update'),

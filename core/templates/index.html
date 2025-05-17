@@ -15,6 +15,22 @@
     </style>
 </head>
 <body class="bg-light">
+<div style="position: absolute; top: 20px; right: 40px; z-index: 1000;">
+  {% if user.is_authenticated %}
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary" type="button" id="settingsMenu" data-bs-toggle="dropdown" aria-expanded="false" title="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+          <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+          <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.116l.094-.318z"/>
+        </svg>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsMenu">
+        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#accountInfoModal">Account Info</a></li>
+        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+      </ul>
+    </div>
+  {% endif %}
+</div>
 <div class="container py-5">
     <div class="row justify-content-center mb-4">
         <div class="col-md-8 text-center">
@@ -86,5 +102,210 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Account Info Modal -->
+<div class="modal fade" id="accountInfoModal" tabindex="-1" aria-labelledby="accountInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="post" action="{% url 'account_info' %}">
+        {% csrf_token %}
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="accountInfoModalLabel">Account Info</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" readonly>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" readonly>
+              </div>
+
+            <div id="passwordEditFields" style="display: none;">
+              <div class="mb-3">
+                <label for="password" class="form-label">New Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password">
+                  <button type="button" class="btn btn-outline-secondary" id="passwordEye" title="View"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16"><path d="M13.359 11.238l1.387 1.386a.5.5 0 0 1-.708.708l-1.387-1.386A8.493 8.493 0 0 1 8 13.5c-4.418 0-8-3.5-8-5.5a8.478 8.478 0 0 1 2.385-3.356l-1.387-1.386a.5.5 0 1 1 .708-.708l1.387 1.386A8.493 8.493 0 0 1 8 2.5c4.418 0 8 3.5 8 5.5a8.478 8.478 0 0 1-2.385 3.356zM8 12.5c3.314 0 6-2.5 6-4.5s-2.686-4.5-6-4.5-6 2.5-6 4.5 2.686 4.5 6 4.5z"/><path d="M6.354 8.354a.5.5 0 0 1-.708-.708l4-4a.5.5 0 0 1 .708.708l-4 4z"/></svg></button>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="password2" class="form-label">Confirm New Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="password2" name="password2" placeholder="Re-enter new password">
+                  <button type="button" class="btn btn-outline-secondary" id="password2Eye" title="View"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16"><path d="M13.359 11.238l1.387 1.386a.5.5 0 0 1-.708.708l-1.387-1.386A8.493 8.493 0 0 1 8 13.5c-4.418 0-8-3.5-8-5.5a8.478 8.478 0 0 1 2.385-3.356l-1.387-1.386a.5.5 0 1 1 .708-.708l1.387 1.386A8.493 8.493 0 0 1 8 2.5c4.418 0 8 3.5 8 5.5a8.478 8.478 0 0 1-2.385 3.356zM8 12.5c3.314 0 6-2.5 6-4.5s-2.686-4.5-6-4.5-6 2.5-6 4.5 2.686 4.5 6 4.5z"/><path d="M6.354 8.354a.5.5 0 0 1-.708-.708l4-4a.5.5 0 0 1 .708.708l-4 4z"/></svg></button>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">User Group</label>
+              <input type="text" class="form-control" value="{% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% endfor %}" readonly>
+            </div>
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mt-2">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-secondary mx-2" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-outline-primary mx-2" id="showResetPasswordFields">Reset Password</button>
+            <button type="submit" class="btn btn-primary mx-2">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Password Change Confirmation Modal -->
+<div class="modal fade" id="passwordChangeConfirmModal" tabindex="-1" aria-labelledby="passwordChangeConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="passwordChangeConfirmModalLabel">Re-login Required</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          If you change your password, you have to login again.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelPasswordChangeBtn" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="continuePasswordChangeBtn">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    var resetBtn = document.getElementById('showResetPasswordFields');
+    var editFields = document.getElementById('passwordEditFields');
+    if (resetBtn && editFields) {
+        resetBtn.addEventListener('click', function() {
+            editFields.style.display = '';
+            resetBtn.style.display = 'none';
+        });
+    }
+    // Always reset password fields and show reset button when modal is closed
+    var accountModal = document.getElementById('accountInfoModal');
+    if (accountModal) {
+        accountModal.addEventListener('hidden.bs.modal', function () {
+            if (editFields) editFields.style.display = 'none';
+            if (resetBtn) resetBtn.style.display = '';
+            // Clear password fields
+            var pw1 = document.getElementById('password');
+            var pw2 = document.getElementById('password2');
+            if (pw1) pw1.value = '';
+            if (pw2) pw2.value = '';
+        });
+    }
+    var editFields = document.getElementById('passwordEditFields');
+    var resetBtn = document.getElementById('showResetPasswordFields');
+    var accountModal = document.getElementById('accountInfoModal');
+    var confirmModalEl = document.getElementById('passwordChangeConfirmModal');
+    var confirmModal = confirmModalEl ? new bootstrap.Modal(confirmModalEl) : null;
+    var continueBtn = document.getElementById('continuePasswordChangeBtn');
+    var cancelBtn = document.getElementById('cancelPasswordChangeBtn');
+    var accountForm = accountModal ? accountModal.querySelector('form') : null;
+    var pendingSubmit = false;
+
+    // Show password fields when reset is clicked
+    if (resetBtn && editFields) {
+        resetBtn.addEventListener('click', function() {
+            editFields.style.display = '';
+            resetBtn.style.display = 'none';
+        });
+    }
+    // Always reset password fields and show reset button when modal is closed
+    if (accountModal) {
+        accountModal.addEventListener('hidden.bs.modal', function () {
+            if (editFields) editFields.style.display = 'none';
+            if (resetBtn) resetBtn.style.display = '';
+            // Clear password fields
+            var pw1 = document.getElementById('password');
+            var pw2 = document.getElementById('password2');
+            if (pw1) pw1.value = '';
+            if (pw2) pw2.value = '';
+        });
+    }
+    // Show confirm modal only if passwords are filled and match
+    if (accountForm) {
+        accountForm.addEventListener('submit', function(e) {
+            var pw1 = document.getElementById('password');
+            var pw2 = document.getElementById('password2');
+            var pw1Val = pw1 ? pw1.value : '';
+            var pw2Val = pw2 ? pw2.value : '';
+            if ((pw1Val || pw2Val) && !pendingSubmit) {
+                if (pw1Val !== pw2Val) {
+                    e.preventDefault();
+                    alert("Passwords do not match.");
+                    return;
+                } else {
+                    e.preventDefault();
+                    if (confirmModal) confirmModal.show();
+                }
+            }
+        });
+    }
+    if (continueBtn) {
+        continueBtn.addEventListener('click', function() {
+            pendingSubmit = true;
+            if (confirmModal) confirmModal.hide();
+            setTimeout(function() {
+                if (accountForm) accountForm.submit();
+            }, 300);
+        });
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            pendingSubmit = false;
+            if (editFields) editFields.style.display = 'none';
+            if (resetBtn) resetBtn.style.display = '';
+            var pw1 = document.getElementById('password');
+            var pw2 = document.getElementById('password2');
+            if (pw1) pw1.value = '';
+            if (pw2) pw2.value = '';
+        });
+    }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    function togglePasswordVisibility(inputId, iconBtn) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        // Find the SVG inside the button
+        var svg = iconBtn.querySelector('svg');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (svg) {
+                svg.outerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zm-8 4.5c-3.314 0-6-2.5-6-4.5s2.686-4.5 6-4.5 6 2.5 6 4.5-2.686 4.5-6 4.5z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>';
+            }
+        } else {
+            input.type = 'password';
+            if (svg) {
+                svg.outerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16"><path d="M13.359 11.238l1.387 1.386a.5.5 0 0 1-.708.708l-1.387-1.386A8.493 8.493 0 0 1 8 13.5c-4.418 0-8-3.5-8-5.5a8.478 8.478 0 0 1 2.385-3.356l-1.387-1.386a.5.5 0 1 1 .708-.708l1.387 1.386A8.493 8.493 0 0 1 8 2.5c4.418 0 8 3.5 8 5.5a8.478 8.478 0 0 1-2.385 3.356zM8 12.5c3.314 0 6-2.5 6-4.5s-2.686-4.5-6-4.5-6 2.5-6 4.5 2.686 4.5 6 4.5z"/><path d="M6.354 8.354a.5.5 0 0 1-.708-.708l4-4a.5.5 0 0 1 .708.708l-4 4z"/></svg>';
+            }
+        }
+    }
+
+    // Attach event listeners for each eye button
+    var maskedEye = document.getElementById('maskedPasswordEye');
+    if (maskedEye) {
+        maskedEye.addEventListener('click', function() {
+            togglePasswordVisibility('maskedPassword', maskedEye);
+        });
+    }
+    var pwEye = document.getElementById('passwordEye');
+    if (pwEye) {
+        pwEye.addEventListener('click', function() {
+            togglePasswordVisibility('password', pwEye);
+        });
+    }
+    var pw2Eye = document.getElementById('password2Eye');
+    if (pw2Eye) {
+        pw2Eye.addEventListener('click', function() {
+            togglePasswordVisibility('password2', pw2Eye);
+        }); 
+    }
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Config Meta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .login-container { max-width: 400px; margin: 80px auto; }
+    </style>
+</head>
+<body>
+<div class="login-container card shadow p-4">
+    <h2 class="mb-4 text-center">Config Meta Login</h2>
+    {% if form.errors %}
+        <div class="alert alert-danger">Invalid username or password.</div>
+    {% endif %}
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            <input type="text" name="username" autofocus required class="form-control" id="id_username" placeholder="Enter username">
+        </div>
+        <div class="mb-3">
+            <label for="id_password" class="form-label">Password</label>
+            <input type="password" name="password" required class="form-control" id="id_password" placeholder="Enter password">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+</div>
+</body>
+</html>

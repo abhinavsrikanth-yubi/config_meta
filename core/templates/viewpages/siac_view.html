@@ -1,3 +1,4 @@
+{% load group_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +11,9 @@
     <div class="container py-5">
         <div class="row mb-3">
             <div class="col text-start">
+                {% if user.is_superuser or user|has_group:"Product" %}
                 <a href="{% url 'siac_create' %}" class="btn btn-primary">+ Create SIAC</a>
+                {% endif %}
             </div>
         </div>
     
@@ -68,7 +71,9 @@ function rendersiacList(siacs) {
                     <td>${item.label}</td>
                     <td>
                         <a href="/siac/${item.id}/" class="btn btn-sm btn-primary">View</a>
+                        {% if user.is_superuser or user|has_group:"Product" %}
                         <a href="/siac/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
+                        {% endif %}
                     </td>
                 </tr>
             `).join('')}

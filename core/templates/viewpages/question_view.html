@@ -1,3 +1,5 @@
+{% load group_filters %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +12,9 @@
     <div class="container py-5">
         <div class="row mb-3">
             <div class="col text-start">
+                {% if user.is_superuser or user|has_group:"Product" %}
                 <a href="{% url 'question_create' %}" class="btn btn-primary">+ Create Question</a>
+                {% endif %}
             </div>
         </div>
     
@@ -67,11 +71,11 @@ function renderQuestionList(questions) {
                 <tr>
                     <td>${item.label}</td>
                     <td>
-    <a href="/question/${item.id}/" class="btn btn-sm btn-primary">View</a>
-    {% if perms.core.change_questionmaster %}
-<a href="/question/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
-{% endif %}
-</td>
+                        <a href="/question/${item.id}/" class="btn btn-sm btn-primary">View</a>
+                        {% if user.is_superuser or user|has_group:"Product" %}
+                        <a href="/question/update/${item.id}/" class="btn btn-sm btn-warning ms-1">Update</a>
+                        {% endif %}
+                    </td>
                 </tr>
             `).join('')}
         </tbody>
@@ -79,7 +83,7 @@ function renderQuestionList(questions) {
     list.innerHTML = table;
 }
 
-function renderPagination(current, total) {
+function renderPagination(current, total, query) {
     let pag = document.getElementById('pagination');
     let items = '';
     let maxPages = 10;
@@ -94,17 +98,17 @@ function renderPagination(current, total) {
 
     // Prev arrow (to previous window)
     if (start > 1) {
-        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchQuestions(${start - 1});return false;">&lt;</a></li>`;
+        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchQuestions(${start - 1}, '${query}');return false;">&lt;</a></li>`;
     }
 
     // Page numbers
     for (let i = start; i <= end; i++) {
-        items += `<li class="page-item${i === current ? ' active' : ''}"><a class="page-link" href="#" onclick="fetchQuestions(${i});return false;">${i}</a></li>`;
+        items += `<li class="page-item${i === current ? ' active' : ''}"><a class="page-link" href="#" onclick="fetchQuestions(${i}, '${query}');return false;">${i}</a></li>`;
     }
 
     // Next arrow (to next window)
     if (end < total) {
-        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchQuestions(${end + 1});return false;">&gt;</a></li>`;
+        items += `<li class="page-item"><a class="page-link" href="#" onclick="fetchQuestions(${end + 1}, '${query}');return false;">&gt;</a></li>`;
     }
 
     pag.innerHTML = items;

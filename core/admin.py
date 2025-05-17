@@ -33,3 +33,30 @@ class ConfigMetasAdmin(admin.ModelAdmin):
     list_display = ('config_id', 'state_id', 'question_id', 'siac_id', 'task_id', 'job_id', 'entity_type')
     search_fields = ('config_id', 'state_id', 'question_id', 'siac_id')
     list_filter = ('entity_type', 'is_active')
+
+    # def has_change_permission(self, request, obj=None):
+    #     # Allow 'product' group to update, 'developer' group only to view
+    #     if request.user.groups.filter(name='product').exists():
+    #         return True
+    #     elif request.user.groups.filter(name='developer').exists():
+    #         # Only allow view, not update
+    #         if request.method in ['GET', 'HEAD', 'OPTIONS']:
+    #             return True
+    #         return False
+    #     return super().has_change_permission(request, obj)
+
+    # def has_view_permission(self, request, obj=None):
+    #     # Both groups can view
+    #     if request.user.groups.filter(name__in=['product', 'developer']).exists():
+    #         return True
+    #     return super().has_view_permission(request, obj)
+
+    # def has_add_permission(self, request):
+    #     # Only product group can add
+    #     return request.user.groups.filter(name='product').exists()
+
+    # def has_delete_permission(self, request, obj=None):
+    #     # Only product group can delete
+    #     return request.user.groups.filter(name='product').exists()
+
+# admin.site.register(ConfigMetas, ConfigMetasAdmin)

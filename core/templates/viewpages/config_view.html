@@ -1,4 +1,4 @@
-{% load static %}
+{% load group_filters %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +12,9 @@
 <div class="container py-5">
     <div class="row mb-3">
         <div class="col text-start">
+            {% if user.is_superuser or user|has_group:"Product" %}
             <a href="{% url 'config_create' %}" class="btn btn-primary">+ Create Config</a>
+            {% endif %}
         </div>
         <div class="col text-end">
             <a href="/" class="btn btn-secondary">Back</a>
@@ -93,7 +95,9 @@ function renderConfigList(configs) {
                     <td>${item.job_id}</td>
                     <td>
                         <a href="/config/${encodeURIComponent(item.id)}/" class="btn  btn-info btn-sm">View</a>
+                        {% if user.is_superuser or user|has_group:"product" %}
                         <a href="/config/update/${encodeURIComponent(item.id)}/" class="btn btn-warning btn-sm">Update</a>
+                        {% endif %}
                     </td>
                 </tr>
             `).join('')}
