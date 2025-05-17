@@ -29,7 +29,7 @@ This project is a robust and flexible Django web application for managing comple
 
 1. **Clone the repository**
     ```bash
-    git clone <your-repo-url>
+    git clone <https://github.com/abhinavsrikanth-yubi/config_meta>
     cd <repo-folder>
     ```
 
