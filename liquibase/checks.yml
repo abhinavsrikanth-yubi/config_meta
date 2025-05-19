@@ -1,0 +1,6 @@
+checks:
+  - name: MyCustomCheck
+    type: python
+    script: custom.py
+    scope: database
+    enabled: true
