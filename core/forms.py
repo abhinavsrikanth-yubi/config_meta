@@ -14,6 +14,7 @@ class QuestionMasterForm(forms.ModelForm):
             self.initial['possible_options'] = ', '.join(self.instance.possible_options)
             self.fields['possible_options'].initial = ', '.join(self.instance.possible_options)
             self.fields['question_id'].disabled = True
+            
     def clean_possible_options(self):
         data = self.cleaned_data['possible_options']
         if not data:
@@ -261,6 +262,7 @@ class ConfigMetaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Populate choices for all dropdowns
+        self.fields['siac_id'].widget = forms.TextInput(attrs={'class': 'form-control'})
         self.fields['question_id'].choices = [
             (q.question_id, f"{q.question_id} - {q.question_name}") for q in QuestionMaster.objects.all()
         ]
@@ -279,8 +281,8 @@ class ConfigMetaForm(forms.ModelForm):
             self.fields['possible_options'].initial = ', '.join(self.instance.possible_options)
         # Render siac_id as CSV string for UI
         if self.instance and self.instance.pk and isinstance(self.instance.siac_id, list):
-            self.initial['siac_id'] = ', '.join(str(i) for i in self.instance.siac_id)
-            self.fields['siac_id'].initial = ', '.join(str(i) for i in self.instance.siac_id)
+            self.initial['siac_id'] = str(self.instance.siac_id)
+            self.fields['siac_id'].initial = str(self.instance.siac_id)
         if self.instance and self.instance.pk:
             self.fields['config_id'].initial = self.instance.config_id
             self.fields['config_id'].disabled = True
@@ -303,15 +305,15 @@ class ConfigMetaForm(forms.ModelForm):
         data = data.replace('[','').replace(']','').replace("'",'').replace('"','')
         return [i.strip() for i in data.split(',') if i.strip()]
 
-    def clean_siac_id(self):
-        data = self.cleaned_data.get('siac_id', '')
-        if isinstance(data, list):
-            return [int(i) for i in data if str(i).strip()]
-        if not data:
-            return []
-        # Remove brackets if user pasted a list-like string
-        data = data.replace('[','').replace(']','')
-        return [int(i.strip()) for i in data.split(',') if i.strip().isdigit()]
+    # def clean_siac_id(self):
+    #     data = self.cleaned_data.get('siac_id', '')
+    #     if isinstance(data, list):
+    #         return [int(i) for i in data if str(i).strip()]
+    #     if not data:
+    #         return []
+    #     # Remove brackets if user pasted a list-like string
+    #     data = data.replace('[','').replace(']','')
+    #     return [int(i.strip()) for i in data.split(',') if i.strip().isdigit()]
     
     #     self.fields['question_id'].label_from_instance = lambda obj: f"{obj.question_id} - {obj.question_name}"
     #     self.fields['state_id'].label_from_instance = lambda obj: f"{obj.state_id} - {obj.state_name}"
@@ -391,20 +393,25 @@ class ConfigMetaForm(forms.ModelForm):
             return val
         return ''
 
-
     def clean_siac_id(self):
-        data = self.cleaned_data.get('siac_id', '')
-        # If it's already a list, clean each item
-        if isinstance(data, list):
-            return [str(s).strip() for s in data if s]
-        # If it's a string, split by commas and clean each item
-        if isinstance(data, str):
-            # Clean any brackets or quotes
-            clean_data = str(data).replace('[', '').replace(']', '').replace('"', '').strip()
-            if clean_data:
-                return [str(s).strip() for s in clean_data.split(',') if s.strip()]
-            return []
-        return []
+        data = self.cleaned_data['siac_id']
+        # Optionally, validate CSV format or strip whitespace
+        return data.strip() if data else ''
+
+
+    # def clean_siac_id(self):
+    #     data = self.cleaned_data.get('siac_id', '')
+    #     # If it's already a list, clean each item
+    #     if isinstance(data, list):
+    #         return [str(s).strip() for s in data if s]
+    #     # If it's a string, split by commas and clean each item
+    #     if isinstance(data, str):
+    #         # Clean any brackets or quotes
+    #         clean_data = str(data).replace('[', '').replace(']', '').replace('"', '').strip()
+    #         if clean_data:
+    #             return [str(s).strip() for s in clean_data.split(',') if s.strip()]
+    #         return []
+    #     return []
 
     def clean_parent_response_condition(self):
         data = self.cleaned_data.get('parent_response_condition', '')

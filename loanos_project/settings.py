@@ -31,6 +31,13 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+# Session expires after 3 hours since login (absolute timeout)
+SESSION_COOKIE_AGE = 10800  # 3 hours in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Add the following to your MIDDLEWARE after AuthenticationMiddleware:
+# 'core.middleware.AbsoluteSessionTimeoutMiddleware',
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -98,15 +105,15 @@ AUTH_PASSWORD_VALIDATORS = [
     # {
     #     # 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     # },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
     # {
-    #     # 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    #     'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     # },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    # # {
+    #     # 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    # # },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    # },
 ]
 
 

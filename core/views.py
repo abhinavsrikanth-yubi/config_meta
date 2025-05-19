@@ -471,29 +471,26 @@ def config_create_view(request):
                 parent_response_dict.setdefault(q, []).append(r)
         possible_options_raw = request.POST.get('possible_options', '')
         possible_options_list = [opt.strip() for opt in possible_options_raw.split(',') if opt.strip()]
-        siac_id_raw = request.POST.get('siac_id', '')
-        siac_ids = [s.strip() for s in siac_id_raw.split(',') if s.strip()]
+        siac_ids_raw = request.POST.get('siac_id', '')
+        siac_ids = [sid.strip() for sid in siac_ids_raw.split(',') if sid.strip()]
         if form.is_valid():
             created_configs = []
             duplicate_configs = []
+            question_id = form.cleaned_data.get('question_id')
+            state_id = form.cleaned_data.get('state_id')
+            task_id = form.cleaned_data.get('task_id')
+            job_id = form.cleaned_data.get('job_id')
+            generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
+            now = timezone.now()
             for siac_id in siac_ids:
-                siac_id_str = str(int(siac_id))
-                siac_id_list = [int(siac_id)]
-                question_id = form.cleaned_data.get('question_id')
-                state_id = form.cleaned_data.get('state_id')
-                task_id = form.cleaned_data.get('task_id')
-                job_id = form.cleaned_data.get('job_id')
-                generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
-                config_id_str = f"{generated_id}-{siac_id_str}"
-                now = timezone.now()
-                # Check duplicate
+                config_id_str = f"{generated_id}-{siac_id}"
                 if ConfigMetas.objects.filter(config_id=config_id_str).exists():
                     duplicate_configs.append(config_id_str)
                     continue
                 ConfigMetas.objects.create(
                     config_id=config_id_str,
                     id=generated_id,
-                    siac_id=siac_id_list,
+                    siac_id=siac_id,  # store as string
                     state_id=state_id,
                     question_id=question_id,
                     job_id=job_id,
@@ -513,7 +510,6 @@ def config_create_view(request):
                     updated_at=now,
                 )
                 created_configs.append(config_id_str)
-                print(created_configs)
             if created_configs:
                 messages.success(request, f"Created configs: {', '.join(created_configs)}")
             if duplicate_configs:
@@ -524,13 +520,10 @@ def config_create_view(request):
             messages.error(request, "Form validation failed")
         # Normalize siac_id and possible_options for re-rendering
         initial = {}
-        # siac_ids: convert to CSV string for display
         if siac_ids:
             initial['siac_id'] = ', '.join(str(x) for x in siac_ids)
-        # possible_options: convert to CSV string for display
         if possible_options_list:
             initial['possible_options'] = ', '.join(possible_options_list)
-        # Use the initial dict for the form
         form = ConfigMetaForm(request.POST, initial=initial)
         return render(request, 'createpages/config.html', {
             'form': form,
@@ -548,6 +541,7 @@ def config_create_view(request):
         })
 
 @user_passes_test(is_product)
+@user_passes_test(is_product)
 def config_update_view(request, pk):
     from .models import QuestionMaster
     questions = QuestionMaster.objects.all()
@@ -555,72 +549,98 @@ def config_update_view(request, pk):
 
     if request.method == 'POST':
         form = ConfigMetaForm(request.POST, instance=config)
-        # Load existing parent_response_condition dict
         existing_dict = config.parent_response_condition.copy() if config.parent_response_condition else {}
         parent_questions = request.POST.getlist('parent_question')
         parent_responses = request.POST.getlist('parent_response')
-        # Build new responses from POST
         parent_response_dict = {}
         for q, r in zip(parent_questions, parent_responses):
             if q and r:
                 parent_response_dict.setdefault(q, []).append(r)
-        # Merge: extend or add
         for q, responses in parent_response_dict.items():
-            if q in existing_dict:
-                existing_dict[q].extend(responses)
-            else:
+            if existing_dict.get(q) != responses:
                 existing_dict[q] = responses
+
         possible_options_raw = request.POST.get('possible_options', '')
         possible_options_list = [opt.strip() for opt in possible_options_raw.split(',') if opt.strip()]
+        siac_ids_raw = request.POST.get('siac_id', '')
+        siac_ids = [sid.strip() for sid in siac_ids_raw.split(',') if sid.strip()]
+        question_id = form.data.get('question_id') or form.initial.get('question_id')
+        state_id = form.data.get('state_id') or form.initial.get('state_id')
+        task_id = form.data.get('task_id') or form.initial.get('task_id')
+        job_id = form.data.get('job_id') or form.initial.get('job_id')
+        generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
+        now = timezone.now()
         if form.is_valid():
-            config_obj = form.save(commit=False)
-            config_obj.parent_response_condition = existing_dict
-            config_obj.possible_options = possible_options_list
-            config_obj.updated_at = timezone.now()
-            config_obj.save()
-            messages.success(request, f"Config {config_obj.config_id} updated successfully.")
-            return redirect('config_update', pk=config_obj.config_id)
+            updated_configs = []
+            created_configs = []
+            # Find all existing configs for this base config (excluding siac_id)
+            base_configs_qs = ConfigMetas.objects.filter(id=generated_id)
+            # Track SIAC IDs that should remain
+            updated_siac_ids = set()
+            for siac_id in siac_ids:
+                config_id_str = f"{generated_id}-{siac_id}"
+                obj, created = ConfigMetas.objects.update_or_create(
+                    config_id=config_id_str,
+                    defaults={
+                        'id': generated_id,
+                        'siac_id': siac_id,
+                        'state_id': state_id,
+                        'question_id': question_id,
+                        'job_id': job_id,
+                        'task_id': task_id,
+                        'possible_options': possible_options_list,
+                        'parent_option_condition': form.cleaned_data.get('parent_option_condition'),
+                        'parent_response_condition': existing_dict,
+                        'parent_question_operator': form.cleaned_data.get('parent_question_operator'),
+                        'category': form.cleaned_data.get('category'),
+                        'enable_task_response': form.cleaned_data.get('enable_task_response'),
+                        'entity_type': form.cleaned_data.get('entity_type'),
+                        'question_type': form.cleaned_data.get('question_type'),
+                        'attributes': form.cleaned_data.get('attributes'),
+                        'is_active': form.cleaned_data.get('is_active'),
+                        'skip_trigger': form.cleaned_data.get('skip_trigger'),
+                        'updated_at': now,
+                    }
+                )
+                updated_siac_ids.add(siac_id)
+                if created:
+                    obj.created_at = now
+                    obj.save()
+                    created_configs.append(config_id_str)
+                else:
+                    updated_configs.append(config_id_str)
+            # Remove configs for SIAC IDs not in the new list
+            for old_config in base_configs_qs:
+                if old_config.siac_id not in updated_siac_ids:
+                    old_config.delete()
+            # Show messages
+            if created_configs:
+                messages.success(request, f"Created configs: {', '.join(created_configs)}")
+            if updated_configs:
+                messages.success(request, f"Updated configs: {', '.join(updated_configs)}")
+            return redirect('config_update', pk=f"{generated_id}-{siac_ids[0]}")
         else:
             messages.error(request, "Form validation failed")
-        parent_response_items = existing_dict
-        # else:
-        # # GET: prepare initial data for form
-        #     initial = {}
-        if isinstance(config.siac_id, list):
-            # Handles both ['4'] and [4]
-            initial['siac_id'] = ', '.join(str(x) for x in config.siac_id)
-        elif isinstance(config.siac_id, str):
-            # Try to parse string list
-            import ast
-            try:
-                parsed = ast.literal_eval(config.siac_id)
-                if isinstance(parsed, list):
-                    initial['siac_id'] = ', '.join(str(x) for x in parsed)
-                else:
-                    initial['siac_id'] = config.siac_id
-            except Exception:
-                initial['siac_id'] = config.siac_id
-        else:
-            initial['siac_id'] = config.siac_id or ''
-        form = ConfigMetaForm(instance=config, initial=initial)
-        parent_response_items = config.parent_response_condition or {}
-        parent_response_items = parent_response_dict
+            initial = {}
+            if siac_ids:
+                initial['siac_id'] = ', '.join(str(x) for x in siac_ids)
+            if possible_options_list:
+                initial['possible_options'] = ', '.join(possible_options_list)
+            form = ConfigMetaForm(request.POST, instance=config, initial=initial)
+            parent_response_items = existing_dict
+            return render(request, 'createpages/config.html', {
+                'form': form,
+                'config': config,
+                'is_update': True,
+                'parent_response_items': parent_response_items,
+                'questions': questions,
+            })
     else:
         initial = {}
         if isinstance(config.siac_id, list):
-            # Handles both ['4'] and [4]
             initial['siac_id'] = ', '.join(str(x) for x in config.siac_id)
         elif isinstance(config.siac_id, str):
-            # Try to parse string list
-            import ast
-            try:
-                parsed = ast.literal_eval(config.siac_id)
-                if isinstance(parsed, list):
-                    initial['siac_id'] = ', '.join(str(x) for x in parsed)
-                else:
-                    initial['siac_id'] = config.siac_id
-            except Exception:
-                initial['siac_id'] = config.siac_id
+            initial['siac_id'] = config.siac_id
         else:
             initial['siac_id'] = config.siac_id or ''
         form = ConfigMetaForm(instance=config, initial=initial)
@@ -633,162 +653,7 @@ def config_update_view(request, pk):
         'questions': questions,
     })
 
-    # Fetch config if updating, else None
-    config = get_object_or_404(ConfigMetas, config_id=pk) if pk else None
-    is_update = bool(pk)
 
-    # For GET requests: render the form with instance data
-    if request.method == 'GET':
-        # Prepare initial data for possible_options and siac_id as CSV
-        initial = {}
-        if config:
-            # possible_options: stored as list or string, show as CSV
-            if isinstance(config.possible_options, list):
-                initial['possible_options'] = ', '.join(config.possible_options)
-            elif isinstance(config.possible_options, str):
-                initial['possible_options'] = config.possible_options
-            # siac_id: always show as CSV string
-            siac_val = config.siac_id
-            if isinstance(siac_val, list):
-                initial['siac_id'] = ', '.join(str(x) for x in siac_val)
-            elif isinstance(siac_val, str):
-                # Try to parse a string that looks like a list
-                if siac_val.startswith('[') and siac_val.endswith(']'):
-                    try:
-                        import ast
-                        parsed = ast.literal_eval(siac_val)
-                        if isinstance(parsed, list):
-                            initial['siac_id'] = ', '.join(str(x) for x in parsed)
-                        else:
-                            initial['siac_id'] = siac_val
-                    except Exception:
-                        initial['siac_id'] = siac_val
-                else:
-                    initial['siac_id'] = siac_val
-            else:
-                initial['siac_id'] = ''
-            # Parent response: parse dict for rendering
-            parent_response_items = config.parent_response_condition or {}
-        else:
-            parent_response_items = {}
-        from .models import QuestionMaster
-        # questions = QuestionMaster.objects.all()
-        form = ConfigMetaForm(instance=config, initial=initial)
-        return render(request, 'createpages/config.html', {
-            'form': form,
-            'config': config,
-            'is_update': is_update,
-            'parent_response_items': parent_response_items,
-            'questions': QuestionMaster.objects.all(),
-            # 'questions': questions,
-        })
-
-    # For POST/PUT: process form submission
-    if request.method in ['POST', 'PUT']:
-        form = ConfigMetaForm(request.POST, instance=config)
-        # Parse parent_response_condition from hidden JSON field
-        parent_response_json = request.POST.get('parent_response_condition_json', '{}')
-        try:
-            parent_response_dict = json.loads(parent_response_json)
-        except Exception:
-            parent_response_dict = {}
-
-        # Clean possible_options to python list
-        possible_options_raw = request.POST.get('possible_options', '')
-        possible_options_list = [opt.strip() for opt in possible_options_raw.split(',') if opt.strip()]
-
-        # Clean siac_id to python list of strings
-        siac_id_raw = request.POST.get('siac_id', '')
-        siac_ids = [s.strip() for s in siac_id_raw.split(',') if s.strip()]
-
-
-        if form.is_valid():
-            created_configs = []
-            updated_configs = []
-
-            for siac_id in siac_ids:
-                # Build config_id for each SIAC
-                siac_id_str = str(int(siac_id))
-                siac_id_list=[int(siac_id)]
-                question_id = form.cleaned_data.get('question_id')
-                state_id = form.cleaned_data.get('state_id')
-                task_id = form.cleaned_data.get('task_id')
-                job_id = form.cleaned_data.get('job_id')
-                new_config_id = f"{question_id}#{state_id}#{task_id}#{job_id}-{siac_id_str}"
-
-                # Use update_or_create to avoid duplicate key errors
-
-                # Generate id and config_id in the view
-                generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
-                config_id_str = f"{generated_id}-{siac_id_str}"
-                now = timezone.now()
-                obj, created = ConfigMetas.objects.update_or_create(
-                    config_id=config_id_str,
-                    defaults={
-                        'id': generated_id,
-                        'siac_id': siac_id_list,
-                        'state_id': state_id,
-                        'question_id': question_id,
-                        'job_id': job_id,
-                        'task_id': task_id,
-                        'possible_options': possible_options_list,
-                        'parent_option_condition': form.cleaned_data.get('parent_option_condition'),
-                        'parent_response_condition': parent_response_dict,
-                        'parent_question_operator': form.cleaned_data.get('parent_question_operator'),
-                        'category': form.cleaned_data.get('category'),
-                        'enable_task_response': form.cleaned_data.get('enable_task_response'),
-                        'entity_type': form.cleaned_data.get('entity_type'),
-                        'question_type': form.cleaned_data.get('question_type'),
-                        'attributes': form.cleaned_data.get('attributes'),
-                        'is_active': form.cleaned_data.get('is_active'),
-                        'skip_trigger': form.cleaned_data.get('skip_trigger'),
-                        'id': form.cleaned_data.get('id'),
-                        # 'updated_at': now,
-                        # 'created_at': now if created else obj.created_at,
-                    }
-                )
-                if created:
-                    obj.created_at = now
-                    obj.save()
-                    created_configs.append(new_config_id)
-                else:
-                    updated_configs.append(new_config_id)
-
-            # Show messages
-            if created_configs:
-                messages.success(request, f"Created configs: {', '.join(created_configs)}")
-            if updated_configs:
-                messages.success(request, f"Updated configs: {', '.join(updated_configs)}")
-
-            # Redirect to update page for the first config
-            if created_configs:
-                return redirect('config_update', pk=created_configs[0])
-            elif updated_configs:
-                return redirect('config_update', pk=updated_configs[0])
-            else:
-                messages.error(request, "No configs created or updated")
-                return render(request, 'createpages/config.html', {
-                    'form': form,
-                    'config': config,
-                    'is_update': is_update,
-                    'parent_response_items': parent_response_dict,
-                })
-        else:
-            messages.error(request, "Form validation failed")
-            # For re-rendering after error, show parent_response_items as entered
-            parent_response_items = parent_response_dict
-
-        from .models import QuestionMaster
-        questions = QuestionMaster.objects.all()
-        if not form.has_changed():
-            messages.info(request, "No changes made.")
-        return render(request, 'createpages/config.html', {
-            'form': form,
-            'config': config,
-            'is_update': is_update,
-            'parent_response_items': parent_response_items,
-            'questions': questions,
-        })
 def debug_view(request):
     """Debug view to check database contents"""
     configs = ConfigMetas.objects.all()
