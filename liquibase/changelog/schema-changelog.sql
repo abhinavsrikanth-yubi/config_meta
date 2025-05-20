@@ -253,7 +253,3 @@ ALTER TABLE django_admin_log ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk
 
 --changeset abhinav.srikanth:1747737177000-43
 ALTER TABLE config_metas ALTER COLUMN enable_task_response TYPE VARCHAR(255) USING enable_task_response::text;
-
---changeset abhinav.srikanth:-17477330390-44
---include file="schema-changelog.sql"
---include file="data-changelog.sql"
