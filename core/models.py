@@ -96,7 +96,7 @@ class ConfigMetas(models.Model):
     default_option = models.JSONField(blank=True, null=True)
     parent_response_condition = models.JSONField(null=True)
     possible_options = models.JSONField(blank=True, null=True)
-    enable_task_response = models.JSONField(blank=True, null=True)
+    enable_task_response = models.CharField(max_length=255, null=True)
     entity_type = models.CharField(max_length=255, null=True)
     parent_option_condition = models.JSONField(null=True)
     question_type = models.CharField(max_length=255, null=True)
@@ -114,7 +114,12 @@ class ConfigMetas(models.Model):
     # task_id_fk = models.IntegerField(null=True)
     # question_id_fk = models.IntegerField(null=True)
     # siac_id_fk = models.IntegerField(null=True)
-
+    def save(self, *args, **kwargs):
+        if self.question_type:
+            self.question_type = self.question_type.upper()
+        if self.entity_type:
+            self.entity_type = self.entity_type.upper()
+        super().save(*args, **kwargs)
     # def save(self, *args, **kwargs):
     #     update_fields = kwargs.get('update_fields', None)
 

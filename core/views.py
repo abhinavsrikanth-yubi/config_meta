@@ -78,19 +78,20 @@ def question_master_view(request):
 
 # List view for all jobs
 # from django.shortcuts import get_object_or_404
-
+@login_required
 def job_list_view(request):
     jobs = JobMaster.objects.all()
     return render(request, 'viewpages/job_view.html', {'jobs': jobs})
 
 # Read-only detail view
-
+@login_required
 def job_detail_view(request, pk):
     job = get_object_or_404(JobMaster, job_id=pk)
     return render(request, 'detailing/job_detail.html', {'job': job})
 
 # Unified create/update view
 @user_passes_test(is_product)
+@login_required
 def job_master_view(request, pk=None):
     if pk:
         job = get_object_or_404(JobMaster, job_id=pk)
@@ -131,15 +132,17 @@ def job_master_view(request, pk=None):
 from django.shortcuts import get_object_or_404
 
 # --- Task Master ---
+@login_required
 def task_list_view(request):
     tasks = TaskMaster.objects.all()
     return render(request, 'viewpages/task_view.html', {'tasks': tasks})
-
+@login_required
 def task_detail_view(request, pk):
     task = get_object_or_404(TaskMaster, task_id=pk)
     return render(request, 'detailing/task_detail.html', {'task': task})
 
 @user_passes_test(is_product)
+@login_required
 def task_master_view(request, pk=None):
     if pk:
         task = get_object_or_404(TaskMaster, task_id=pk)
@@ -176,15 +179,18 @@ def task_master_view(request, pk=None):
 
     
 # --- State Master ---
+@login_required
 def state_list_view(request):
     states = StateMaster.objects.all()
     return render(request, 'viewpages/state_view.html', {'states': states})
 
+@login_required
 def state_detail_view(request, pk):
     state = get_object_or_404(StateMaster, state_id=pk)
     return render(request, 'detailing/state_detail.html', {'state': state})
 
 @user_passes_test(is_product)
+@login_required
 def state_master_view(request, pk=None):
     if pk:
         state = get_object_or_404(StateMaster, state_id=pk)
@@ -220,15 +226,17 @@ def state_master_view(request, pk=None):
         return HttpResponseForbidden("You do not have permission to create configs.")
 
 # --- SIAC Master ---
+@login_required
 def siac_list_view(request):
     siacs = SiacMaster.objects.all()
     return render(request, 'viewpages/siac_view.html', {'siacs': siacs})
-
+@login_required
 def siac_detail_view(request, pk):
     siac = get_object_or_404(SiacMaster, siac_id=pk)
     return render(request, 'detailing/siac_detail.html', {'siac': siac})
 
 @user_passes_test(is_product)
+@login_required
 def siac_master_view(request, pk=None):
     if pk:
         siac = get_object_or_404(SiacMaster, siac_id=pk)
@@ -273,6 +281,7 @@ def question_detail_view(request, pk):
     return render(request, 'detailing/question_detail.html', {'question': question})
 
 @user_passes_test(is_product)
+@login_required
 def question_master_view(request, pk=None):
     if pk:
         question = get_object_or_404(QuestionMaster, question_id=pk)
@@ -309,10 +318,10 @@ def question_master_view(request, pk=None):
 
 
 # --- Config Master ---
-
+@login_required
 def config_redirect_view(request):
     return redirect('config_list')
-
+@login_required
 def config_list_view(request):
     # (Unchanged main view for initial load)
     siac = request.GET.get('siac', '').strip()
@@ -451,12 +460,13 @@ def config_search_api(request):
     })
     if not request.user.groups.filter(name='product').exists():
         return HttpResponseForbidden("You do not have permission to create configs.")
-
+@login_required
 def config_detail_view(request, pk):
     config = get_object_or_404(ConfigMetas, config_id=pk)
     return render(request, 'detailing/config_detail.html', {'config': config})
 
 @user_passes_test(is_product)
+@login_required
 def config_create_view(request):
     print("CREATE VIEW CALLED", request.method)
     from .models import QuestionMaster
@@ -471,6 +481,8 @@ def config_create_view(request):
                 parent_response_dict.setdefault(q, []).append(r)
         possible_options_raw = request.POST.get('possible_options', '')
         possible_options_list = [opt.strip() for opt in possible_options_raw.split(',') if opt.strip()]
+        default_option_raw = request.POST.get('default_option', '')
+        default_option_list = [opt.strip() for opt in default_option_raw.split(',') if opt.strip()]
         siac_ids_raw = request.POST.get('siac_id', '')
         siac_ids = [sid.strip() for sid in siac_ids_raw.split(',') if sid.strip()]
         if form.is_valid():
@@ -478,9 +490,23 @@ def config_create_view(request):
             duplicate_configs = []
             question_id = form.cleaned_data.get('question_id')
             state_id = form.cleaned_data.get('state_id')
+            if state_id is not None:
+                state_id = int(state_id)
+            print('state_id choices:', [c[0] for c in form.fields['state_id'].choices])
+            print('POST value:', request.POST.get('state_id'))
             task_id = form.cleaned_data.get('task_id')
             job_id = form.cleaned_data.get('job_id')
+            if question_id == '-1':
+                question_id = -1
+            if state_id == '-1':
+                state_id = -1
+            if task_id == '-1':
+                task_id = -1
+            if job_id == '-1':
+                job_id = -1
+            print(question_id, state_id, task_id, job_id)
             generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
+            print(generated_id)
             now = timezone.now()
             for siac_id in siac_ids:
                 config_id_str = f"{generated_id}-{siac_id}"
@@ -496,6 +522,7 @@ def config_create_view(request):
                     job_id=job_id,
                     task_id=task_id,
                     possible_options=possible_options_list,
+                    default_option=default_option_list,
                     parent_option_condition=form.cleaned_data.get('parent_option_condition'),
                     parent_response_condition=parent_response_dict,
                     parent_question_operator=form.cleaned_data.get('parent_question_operator'),
@@ -541,11 +568,26 @@ def config_create_view(request):
         })
 
 @user_passes_test(is_product)
-@user_passes_test(is_product)
+@login_required
 def config_update_view(request, pk):
     from .models import QuestionMaster
     questions = QuestionMaster.objects.all()
     config = get_object_or_404(ConfigMetas, config_id=pk)
+    parent_response_items={}
+    if config.parent_response_condition:
+        for qid, responses in config.parent_response_condition.items():
+            if str(qid) == "-1":
+                question_name = "None"
+            else:
+                try:
+                    question = QuestionMaster.objects.get(question_id=qid)
+                    question_name = question.question_name
+                except QuestionMaster.DoesNotExist:
+                    question_name = "Unknown"
+            parent_response_items[qid] = {
+                "question_name": question_name,
+                "responses": responses
+            }
 
     if request.method == 'POST':
         form = ConfigMetaForm(request.POST, instance=config)
@@ -559,7 +601,8 @@ def config_update_view(request, pk):
         for q, responses in parent_response_dict.items():
             if existing_dict.get(q) != responses:
                 existing_dict[q] = responses
-
+        default_option_raw = request.POST.get('default_option', '')
+        default_option_list = [opt.strip() for opt in default_option_raw.split(',') if opt.strip()]
         possible_options_raw = request.POST.get('possible_options', '')
         possible_options_list = [opt.strip() for opt in possible_options_raw.split(',') if opt.strip()]
         siac_ids_raw = request.POST.get('siac_id', '')
@@ -569,6 +612,16 @@ def config_update_view(request, pk):
         task_id = form.data.get('task_id') or form.initial.get('task_id')
         job_id = form.data.get('job_id') or form.initial.get('job_id')
         generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
+        if question_id == '-1':
+            question_id = None
+        if state_id == '-1':
+            state_id = -1
+        if task_id == '-1':
+            task_id = -1
+        if job_id == '-1':
+            job_id = -1
+        print(question_id, state_id, task_id, job_id)
+        print(generated_id)
         now = timezone.now()
         if form.is_valid():
             updated_configs = []
@@ -589,6 +642,7 @@ def config_update_view(request, pk):
                         'job_id': job_id,
                         'task_id': task_id,
                         'possible_options': possible_options_list,
+                        'default_option': default_option_list,
                         'parent_option_condition': form.cleaned_data.get('parent_option_condition'),
                         'parent_response_condition': existing_dict,
                         'parent_question_operator': form.cleaned_data.get('parent_question_operator'),

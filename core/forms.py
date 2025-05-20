@@ -206,13 +206,31 @@ class ParentResponseForm(forms.Form):
         required=True
     )
 ParentResponseFormSet = formset_factory(ParentResponseForm, extra=3, can_delete=True)
+CATEGORY_CHOICES = [
+    ('ASSET CATEGORY', 'ASSET CATEGORY'),
+    ('PROGRAM', 'PROGRAM'),
+    ('','NONE')
+]
+ENTITY_TYPE_CHOICES = [
+    ('CUSTOMER', 'CUSTOMER'),
+    ('INVESTOR', 'INVESTOR'),
+    ('','NONE')
+]
+QUESTION_TYPE_CHOICES = [
+    ('STATIC', 'STATIC'),
+    ('DYNAMIC', 'DYNAMIC'),
+    ('','NONE')
+]
+TASK_RESPONSE_CHOICES= [
+    ('YUBI','YUBI'),
+    ('NO WILL RELY ON YUBI','NO WILL RELY ON YUBI'),
+    ('','NONE')
+]
 class ConfigMetaForm(forms.ModelForm):
-    enable_task_response = forms.TypedChoiceField(
-        label='Enable Task Response',
-        choices=[(True, 'Yes'), (False, 'No')],
-        coerce=lambda x: x == 'True',
+    default_option = forms.CharField(
+        label='Default Option',
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     is_active = forms.TypedChoiceField(
         label='Is active',
@@ -228,34 +246,62 @@ class ConfigMetaForm(forms.ModelForm):
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    enable_task_response = forms.ChoiceField(
+        choices=TASK_RESPONSE_CHOICES,
+        required=False,
+        label='Enable Task Response',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    category = forms.ChoiceField(
+        choices=CATEGORY_CHOICES,
+        required=True,
+        label='Category',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    entity_type = forms.ChoiceField(
+        choices=ENTITY_TYPE_CHOICES,
+        required=True,
+        label='Entity Type',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    question_type = forms.ChoiceField(
+        choices=QUESTION_TYPE_CHOICES,
+        required=True,
+        label='Question Type',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     
     config_id = forms.CharField(
         label='Config ID',
         required=False,
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
 # {{ ... }}
-    question_id = forms.ModelChoiceField(
-        queryset=QuestionMaster.objects.all(),
+    question_id = forms.ChoiceField(
+        # queryset=QuestionMaster.objects.all(),
+        choices=[('-1', '-1 - None')] + [(str(q.question_id), f"{q.question_id} - {q.question_name}") for q in QuestionMaster.objects.all()],
         label='Question',
-        required=True,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    state_id = forms.ModelChoiceField(
-        queryset=StateMaster.objects.all(),
+    state_id = forms.ChoiceField(
+        # queryset=StateMaster.objects.all(),
+        choices=[('-1', '-1 - None')] + [(str(s.state_id), f"{s.state_id} - {s.state_name}") for s in StateMaster.objects.all()],
         label='State',
-        required=True,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    job_id = forms.ModelChoiceField(
-        queryset=JobMaster.objects.all(),
+    job_id = forms.ChoiceField(
+        # queryset=JobMaster.objects.all(),
+        choices=[('-1', '-1 - None')] + [(str(j.job_id), f"{j.job_id} - {j.job_name}") for j in JobMaster.objects.all()],
         label='Job',
-        required=True,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    task_id = forms.ModelChoiceField(
-        queryset=TaskMaster.objects.all(),
+    task_id = forms.ChoiceField(
+        # queryset=TaskMaster.objects.all(),
+        choices=[('-1', '-1 - None')] + [(str(t.task_id), f"{t.task_id} - {t.task_name}") for t in TaskMaster.objects.all()],
         label='Task',
-        required=True,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
@@ -263,17 +309,17 @@ class ConfigMetaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Populate choices for all dropdowns
         self.fields['siac_id'].widget = forms.TextInput(attrs={'class': 'form-control'})
-        self.fields['question_id'].choices = [
-            (q.question_id, f"{q.question_id} - {q.question_name}") for q in QuestionMaster.objects.all()
+        self.fields['question_id'].choices = [('-1', '-1 - None')] + [
+            (str(q.question_id), f"{q.question_id} - {q.question_name}") for q in QuestionMaster.objects.all()
         ]
-        self.fields['state_id'].choices = [
-            (s.state_id, f"{s.state_id} - {s.state_name}") for s in StateMaster.objects.all()
+        self.fields['state_id'].choices = [('-1', '-1 - None')] + [
+            (str(s.state_id), f"{s.state_id} - {s.state_name}") for s in StateMaster.objects.all()
         ]
-        self.fields['job_id'].choices = [
-            (j.job_id, f"{j.job_id} - {j.job_name}") for j in JobMaster.objects.all()
+        self.fields['job_id'].choices = [('-1', '-1 - None')] + [
+            (str(j.job_id), f"{j.job_id} - {j.job_name}") for j in JobMaster.objects.all()
         ]
-        self.fields['task_id'].choices = [
-            (t.task_id, f"{t.task_id} - {t.task_name}") for t in TaskMaster.objects.all()
+        self.fields['task_id'].choices = [('-1', '-1 - None')] + [
+            (str(t.task_id), f"{t.task_id} - {t.task_name}") for t in TaskMaster.objects.all()
         ]
         # Render possible_options as CSV string for UI
         if self.instance and self.instance.pk and isinstance(self.instance.possible_options, list):
@@ -351,11 +397,6 @@ class ConfigMetaForm(forms.ModelForm):
     )
     parent_question_operator = forms.CharField(
         label='Parent Question Operator',
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
-    question_type = forms.CharField(
-        label='Question Type',
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )

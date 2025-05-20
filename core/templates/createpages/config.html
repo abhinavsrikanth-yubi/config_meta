@@ -138,7 +138,7 @@
                 <div class="col-md-5">
                     <select name="parent_question" class="form-select parent-question">
                         {% for q in questions %}
-                            <option value="{{ q.question_id }}" {% if q.question_id|stringformat:'s' == qid|stringformat:'s' %}selected{% endif %}>{{ q.question_name }}</option>
+                            <option value="{{ q.question_id }}" {% if q.question_id|stringformat:'s' == qid|stringformat:'s' %}selected{% endif %}>{{ q.question_id }} - {{ q.question_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-5">
                 <select name="parent_question" class="form-select parent-question">
                     {% for q in questions %}
-                        <option value="{{ q.question_id }}">{{ q.question_name }}</option>
+                        <option value="{{ q.question_id }}">{{ q.question_id }} - {{ q.question_name }}</option>
                     {% endfor %}
                 </select>
             </div>
