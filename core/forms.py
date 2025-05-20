@@ -60,7 +60,6 @@ class JobMasterForm(forms.ModelForm):
             self.fields['conditions'].initial = ', '.join(self.instance.conditions)
             # Make job_id read-only on update
             self.fields['job_id'].disabled = True
-        print('Initial conditions:', self.fields['conditions'].initial)
     def clean_conditions(self):
         data = self.cleaned_data['conditions']
         if not data:

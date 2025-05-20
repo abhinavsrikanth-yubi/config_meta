@@ -1,7 +1,7 @@
 from django.urls import path, register_converter
 from django.contrib import admin
 from .views import job_master_view, question_master_view,task_master_view,state_master_view,siac_master_view, index, get_master_results, job_list_view, job_detail_view , debug_view, task_list_view, task_detail_view, state_list_view, state_detail_view, siac_list_view, siac_detail_view, question_list_view, question_detail_view, config_list_view, config_detail_view, config_redirect_view, question_search_api
-from .views import config_list_view, config_create_view, config_update_view, config_detail_view, index, account_info
+from .views import config_list_view, config_create_view, config_update_view, config_detail_view, index, account_info, test_view
 from django.contrib.auth import views as auth_views
 
 from . import viewpage,updatepage
@@ -34,6 +34,8 @@ urlpatterns = [
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('account/info/', account_info, name='account_info'),
     path('', index, name='index'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
+
     # Job URLs
     path('job/', job_master_view, name='job_master'),
     path('job/view/', viewpage.job_view, name='job_list'),
@@ -98,4 +100,5 @@ urlpatterns = [
     path('state/update/<int:pk>/', updatepage.state_update, name='state_update'),
     path('siac/update/<int:pk>/', updatepage.siac_update, name='siac_update'),
     path('job/update/<int:pk>/', updatepage.job_update, name='job_update'),
+    path('test-changelog/', test_view, name='test_changelog'),
 ]

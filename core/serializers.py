@@ -9,8 +9,6 @@ class ISTDateTimeSerializerMixin:
     updated_at_ist = serializers.SerializerMethodField()
 
     def get_created_at_ist(self, obj):
-        print("DEBUG:", obj.created_at)
-        print("DEBUG:", obj.created_at_ist)
         if hasattr(obj, 'created_at') and obj.created_at:
             return obj.created_at.astimezone(IST_TZ).strftime('%Y-%m-%d %H:%M:%S')
         return None

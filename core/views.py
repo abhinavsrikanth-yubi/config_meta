@@ -14,6 +14,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
+from core.utils.liquibase_changelog import liquibase_changelog
+from core.utils.liquibase_changelog import LiquibaseChangelogMixin
 
 
 @login_required
@@ -68,8 +70,6 @@ def question_master_view(request):
             form.save()
             messages.success(request, 'Question Master entry created/updated successfully!')
             return redirect('question_master')
-        else:
-            print("Form errors:", form.errors)
     else:
         form = QuestionMasterForm()
     return render(request, 'createpages/question.html', {'form': form})
@@ -102,26 +102,30 @@ def job_master_view(request, pk=None):
     if request.method == 'POST':
         form = JobMasterForm(request.POST, instance=job)
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             # Check for changes if updating
             if pk:
+                #update
                 has_changed = False
+                changed_fields = []
                 for field in form.changed_data:
                     # Exclude job_id since it's disabled
                     if field != 'job_id':
                         has_changed = True
+                        changed_fields.append(field)
                         break
                 if not has_changed:
                     messages.info(request, 'No edits made.')
                 else:
                     job_obj = form.save()
-                    messages.success(request, 'Job Master entry created/updated successfully!')
+                    mixin.append_liquibase_changeset('update', job_obj)
+                    messages.success(request, 'Job Master entry updated successfully!')
                 form = JobMasterForm(instance=job)
             else:
                 job_obj = form.save()
-                messages.success(request, 'Job Master entry created/updated successfully!')
+                mixin.append_liquibase_changeset('insert', job_obj)
+                messages.success(request, 'Job Master entry created successfully!')
                 form = JobMasterForm()  # blank form after create
-        else:
-            print("Form errors:", form.errors)
     else:
         form = JobMasterForm(instance=job)
     return render(request, 'createpages/job.html', {'form': form, 'job': job, 'is_update': is_update})
@@ -150,34 +154,35 @@ def task_master_view(request, pk=None):
     else:
         task = None
         is_update = False
+
     if request.method == 'POST':
         form = TaskMasterForm(request.POST, instance=task)
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             if pk:
+                # update
                 has_changed = False
+                changed_fields = []
                 for field in form.changed_data:
                     if field != 'task_id':
                         has_changed = True
-                        break
+                        changed_fields.append(field)
                 if not has_changed:
                     messages.info(request, 'No edits made.')
                 else:
                     task_obj = form.save()
-                    messages.success(request, 'Task Master entry created/updated successfully!')
+                    mixin.append_liquibase_changeset('update', task_obj, changed_fields)
+                    messages.success(request, 'Task Master entry updated successfully!')
                 form = TaskMasterForm(instance=task)
             else:
+                # create
                 task_obj = form.save()
-                messages.success(request, 'Task Master entry created/updated successfully!')
+                mixin.append_liquibase_changeset('insert', task_obj)
+                messages.success(request, 'Task Master entry created successfully!')
                 form = TaskMasterForm()  # blank form after create
-        else:
-            print("Form errors:", form.errors)
     else:
         form = TaskMasterForm(instance=task)
-    return render(request, 'createpages/task.html', {'form': form, 'task': task, 'is_update': is_update})
-    if not request.user.groups.filter(name='product').exists():
-        return HttpResponseForbidden("You do not have permission to create configs.")
-
-    
+    return render(request, 'createpages/task.html', {'form': form, 'task': task, 'is_update': is_update})   
 # --- State Master ---
 @login_required
 def state_list_view(request):
@@ -201,24 +206,29 @@ def state_master_view(request, pk=None):
     if request.method == 'POST':
         form = StateMasterForm(request.POST, instance=state)
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             if pk:
+                #update
                 has_changed = False
+                changed_fields = []
                 for field in form.changed_data:
                     if field != 'state_id':
                         has_changed = True
+                        changed_fields.append(field)
                         break
                 if not has_changed:
                     messages.info(request, 'No edits made.')
                 else:
                     state_obj = form.save()
-                    messages.success(request, 'State Master entry created/updated successfully!')
+                    mixin.append_liquibase_changeset('update', state_obj, changed_fields)
+                    messages.success(request, 'State Master entry updated successfully!')
                 form = StateMasterForm(instance=state)
             else:
+                #create
                 state_obj = form.save()
-                messages.success(request, 'State Master entry created/updated successfully!')
+                mixin.append_liquibase_changeset('insert', state_obj)
+                messages.success(request, 'State Master entry created successfully!')
                 form = StateMasterForm()  # blank form after create
-        else:
-            print("Form errors:", form.errors)
     else:
         form = StateMasterForm(instance=state)
     return render(request, 'createpages/state.html', {'form': form, 'state': state, 'is_update': is_update})
@@ -247,24 +257,29 @@ def siac_master_view(request, pk=None):
     if request.method == 'POST':
         form = SiacMasterForm(request.POST, instance=siac)
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             if pk:
+                #update
                 has_changed = False
+                changed_fields = []
                 for field in form.changed_data:
                     if field != 'siac_id':
                         has_changed = True
+                        changed_fields.append(field)
                         break
                 if not has_changed:
                     messages.info(request, 'No edits made.')
                 else:
                     siac_obj = form.save()
-                    messages.success(request, 'SIAC Master entry created/updated successfully!')
+                    mixin.append_liquibase_changeset('update', siac_obj, changed_fields)
+                    messages.success(request, 'SIAC Master entry updated successfully!')
                 form = SiacMasterForm(instance=siac)
             else:
+                #create
                 siac_obj = form.save()
-                messages.success(request, 'SIAC Master entry created/updated successfully!')
+                mixin.append_liquibase_changeset('insert', siac_obj)
+                messages.success(request, 'SIAC Master entry created successfully!')
                 form = SiacMasterForm()  # blank form after create
-        else:
-            print("Form errors:", form.errors)
     else:
         form = SiacMasterForm(instance=siac)
     return render(request, 'createpages/siac.html', {'form': form, 'siac': siac, 'is_update': is_update})
@@ -292,24 +307,29 @@ def question_master_view(request, pk=None):
     if request.method == 'POST':
         form = QuestionMasterForm(request.POST, instance=question)
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             if pk:
+                #update
                 has_changed = False
+                changed_fields = []
                 for field in form.changed_data:
                     if field != 'question_id':
                         has_changed = True
+                        changed_fields.append(field)
                         break
                 if not has_changed:
                     messages.info(request, 'No edits made.')
                 else:
                     question_obj = form.save()
-                    messages.success(request, 'Question Master entry created/updated successfully!')
+                    mixin.append_liquibase_changeset('update', question_obj, changed_fields)
+                    messages.success(request, 'Question Master entry updated successfully!')
                 form = QuestionMasterForm(instance=question)
             else:
+                #create
                 question_obj = form.save()
-                messages.success(request, 'Question Master entry created/updated successfully!')
+                mixin.append_liquibase_changeset('insert', question_obj)
+                messages.success(request, 'Question Master entry created successfully!')
                 form = QuestionMasterForm()  # blank form after create
-        else:
-            print("Form errors:", form.errors)
     else:
         form = QuestionMasterForm(instance=question)
     return render(request, 'createpages/question.html', {'form': form, 'question': question, 'is_update': is_update})
@@ -438,7 +458,6 @@ def config_search_api(request):
 
     results = []
     for config in page_obj:
-        print('DEBUG config object:', config.__dict__)
         siac_val = config.siac_id
         if isinstance(siac_val, list):
             siac_val = ", ".join(map(str, siac_val))
@@ -452,7 +471,6 @@ def config_search_api(request):
                 "task_id": config.task_id,
                 "job_id": config.job_id,
             })
-    print(f"DEBUG: Final results list = {results}")
     return JsonResponse({
         "results": results,
         "current_page": page_obj.number,
@@ -468,7 +486,6 @@ def config_detail_view(request, pk):
 @user_passes_test(is_product)
 @login_required
 def config_create_view(request):
-    print("CREATE VIEW CALLED", request.method)
     from .models import QuestionMaster
     questions = QuestionMaster.objects.all()
     if request.method == 'POST':
@@ -486,27 +503,16 @@ def config_create_view(request):
         siac_ids_raw = request.POST.get('siac_id', '')
         siac_ids = [sid.strip() for sid in siac_ids_raw.split(',') if sid.strip()]
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             created_configs = []
             duplicate_configs = []
             question_id = form.cleaned_data.get('question_id')
             state_id = form.cleaned_data.get('state_id')
             if state_id is not None:
                 state_id = int(state_id)
-            print('state_id choices:', [c[0] for c in form.fields['state_id'].choices])
-            print('POST value:', request.POST.get('state_id'))
             task_id = form.cleaned_data.get('task_id')
             job_id = form.cleaned_data.get('job_id')
-            if question_id == '-1':
-                question_id = -1
-            if state_id == '-1':
-                state_id = -1
-            if task_id == '-1':
-                task_id = -1
-            if job_id == '-1':
-                job_id = -1
-            print(question_id, state_id, task_id, job_id)
             generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
-            print(generated_id)
             now = timezone.now()
             for siac_id in siac_ids:
                 config_id_str = f"{generated_id}-{siac_id}"
@@ -537,6 +543,7 @@ def config_create_view(request):
                     updated_at=now,
                 )
                 created_configs.append(config_id_str)
+                mixin.append_liquibase_changeset('insert', config)
             if created_configs:
                 messages.success(request, f"Created configs: {', '.join(created_configs)}")
             if duplicate_configs:
@@ -570,7 +577,6 @@ def config_create_view(request):
 @user_passes_test(is_product)
 @login_required
 def config_update_view(request, pk):
-    from .models import QuestionMaster
     questions = QuestionMaster.objects.all()
     config = get_object_or_404(ConfigMetas, config_id=pk)
     parent_response_items={}
@@ -612,18 +618,9 @@ def config_update_view(request, pk):
         task_id = form.data.get('task_id') or form.initial.get('task_id')
         job_id = form.data.get('job_id') or form.initial.get('job_id')
         generated_id = f"{question_id}#{state_id}#{task_id}#{job_id}"
-        if question_id == '-1':
-            question_id = None
-        if state_id == '-1':
-            state_id = -1
-        if task_id == '-1':
-            task_id = -1
-        if job_id == '-1':
-            job_id = -1
-        print(question_id, state_id, task_id, job_id)
-        print(generated_id)
         now = timezone.now()
         if form.is_valid():
+            mixin = LiquibaseChangelogMixin()
             updated_configs = []
             created_configs = []
             # Find all existing configs for this base config (excluding siac_id)
@@ -661,8 +658,15 @@ def config_update_view(request, pk):
                     obj.created_at = now
                     obj.save()
                     created_configs.append(config_id_str)
+                    mixin.append_liquibase_changeset('insert', obj)
                 else:
+                    changed_fields = []
+                    for field in form.changed_data:
+                        # Only include fields that are actually in the model and not ignored
+                        if hasattr(obj, field):
+                            changed_fields.append(field)
                     updated_configs.append(config_id_str)
+                    mixin.append_liquibase_changeset('update', obj, changed_fields)
             # Remove configs for SIAC IDs not in the new list
             for old_config in base_configs_qs:
                 if old_config.siac_id not in updated_siac_ids:
@@ -711,13 +715,7 @@ def config_update_view(request, pk):
 def debug_view(request):
     """Debug view to check database contents"""
     configs = ConfigMetas.objects.all()
-    print("\nDatabase contents:")
     for config in configs:
-        print(f"\nConfig ID: {config.id}")
-        print(f"SIAC ID: {config.siac_id}")
-        print(f"Question ID: {config.question_id}")
-        print(f"State ID: {config.state_id}")
-        print(f"Job ID: {config.job_id}")
         siac_id=str(siac_id),
         state_id=state_id,
         question_id=question_id,
@@ -726,13 +724,7 @@ def debug_view(request):
         config_id=config_id  # Store the generated config ID
     messages.success(request, 'Configurations created successfully for the given input!')
     return redirect('config_data_view')
-    # else:
-    #     print("Form errors:", form.errors)
-        # else:
-            # form = ConfigMetaForm()
     
-    # return render(request, 'config.html', {'form': form})
-
 
 class QuestionMasterAPI(APIView):
     def get(self, request, pk=None):
@@ -975,4 +967,15 @@ def account_info(request):
         return redirect('index')
     return redirect('index')
 
-    
+
+
+from django.http import HttpResponse
+from core.utils.liquibase_changelog import liquibase_changelog
+
+@liquibase_changelog('update')
+def test_view(request):
+    from core.models import TaskMaster
+    obj = TaskMaster.objects.first()
+    request.liquibase_instance = obj
+    request.liquibase_changed_fields = ['task_name']
+    return HttpResponse("Test")

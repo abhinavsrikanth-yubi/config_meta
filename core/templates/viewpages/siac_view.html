@@ -19,8 +19,15 @@
       </button>
       <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsMenu">
         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#accountInfoModal">Account Info</a></li>
-        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-      </ul>
+        <li>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item" style="background:none; border:none; padding:10; margin:0; width:100%; text-align:left;">
+                  Logout
+                </button>
+              </form>
+          </li>      
+    </ul>
     </div>
   {% endif %}
 </div>

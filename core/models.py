@@ -14,54 +14,6 @@ import pytz
 
 INDIA_TZ = pytz.timezone('Asia/Kolkata')
 
-# class ConfigMetas(models.Model):
-#     id = models.CharField(max_length=100, primary_key=True)
-#     config_id = models.CharField(max_length=100, null=True)
-#     parent_question_operator = models.CharField(max_length=255, null=True)
-#     siac_id = models.CharField(max_length=255, null=True)
-#     default_option = models.JSONField(null=True)
-#     parent_response_condition = models.JSONField(null=True)
-#     possible_options = models.CharField(null=True)
-#     enable_task_response = models.JSONField(null=True)
-#     entity_type = models.CharField(max_length=255, null=True)
-#     parent_option_condition = models.JSONField(null=True)
-#     question_type = models.CharField(max_length=255, null=True)
-#     attributes = models.JSONField(null=True)
-#     state_id = models.IntegerField(null=True)
-#     question_id = models.IntegerField(null=True)
-#     job_id = models.IntegerField(null=True)
-#     task_id = models.IntegerField(null=True)
-#     category = models.CharField(max_length=255, null=True)
-#     is_active = models.BooleanField(null=True)
-#     created_at = models.DateTimeField(null=True)
-#     updated_at = models.DateTimeField(null=True)
-    # job_id_fk = models.IntegerField(null=True)
-    # task_id_fk = models.IntegerField(null=True)
-    # question_id_fk = models.IntegerField(null=True)
-    # siac_id_fk = models.IntegerField(null=True)
-
-    # def save(self, *args, **kwargs):
-    #     # Generate ID: question_id#state_id#task_id#job_id
-    #     self.id = f"{self.question_id}#{self.state_id}#{self.task_id}#{self.job_id}"
-    #     print(self.id)
-    #     # Generate config_id: id-first_char_of_siac_id
-    #     if self.siac_id:
-    #         print(self.siac_id)
-    #         self.config_id = f"{self.id}-{str(self.siac_id)}"
-    #         self.config_id = self.config_id.replace('##-1#', '#')  # Remove ##-1#
-    #         self.config_id = self.config_id.replace('###-', '#')  # Remove ###-
-        
-    #     now_utc = timezone.now()
-    #     now_india = now_utc.astimezone(INDIA_TZ)
-    #     if not self.created_at:
-    #         self.created_at = now_india
-    #     self.updated_at = now_india
-        
-    #     super().save(*args, **kwargs)
-
-    # class Meta:
-    #     managed = False
-    #     db_table = 'config_metas'
 
 class JobMaster(models.Model):
     job_id = models.IntegerField(primary_key=True)
@@ -85,7 +37,7 @@ class JobMaster(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'job_master'
+        db_table = 'config_data"."job_master'
 
 
 class ConfigMetas(models.Model):
@@ -145,7 +97,7 @@ class ConfigMetas(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'config_metas'
+        db_table = 'config_data"."config_metas'
 
 
 # class JobMaster(models.Model):
@@ -204,7 +156,7 @@ class QuestionMaster(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'question_master'
+        db_table = 'config_data"."question_master'
 
 
 class SiacMaster(models.Model):
@@ -219,12 +171,11 @@ class SiacMaster(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'siac_master'
+        db_table = 'config_data"."siac_master'
 
     def save(self, *args, **kwargs):
         now_utc = timezone.now()
         now_india = now_utc.astimezone(INDIA_TZ)
-        print(now_utc,now_india)
         if not self.created_at:
             self.created_at = now_india
         self.updated_at = now_india
@@ -256,7 +207,7 @@ class StateMaster(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'state_master'
+        db_table = 'config_data"."state_master'
 
 
 class TaskMaster(models.Model):
@@ -277,7 +228,6 @@ class TaskMaster(models.Model):
     def save(self, *args, **kwargs):
         now_utc = timezone.now()
         now_india = now_utc.astimezone(INDIA_TZ)
-        print(now_india,now_utc)
         if not self.created_at:
             self.created_at = now_india
         self.updated_at = now_india
@@ -287,4 +237,4 @@ class TaskMaster(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'task_master'
+        db_table = 'config_data"."task_master'
