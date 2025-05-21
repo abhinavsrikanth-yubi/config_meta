@@ -116,12 +116,6 @@
                             Is active
                         </label>
                     </div>
-                    <div class="form-check form-switch mb-3">
-                        {{ form.skip_trigger }}
-                        <label class="form-check-label ms-2" for="{{ form.skip_trigger.id_for_label }}">
-                            Skip Trigger
-                        </label>
-                    </div>
                     <div class="mb-3">
                         {{ form.id.label_tag }} {{ form.id|add_class:"form-control" }}
                     </div>
@@ -162,6 +156,12 @@
                         </div>
                     {% endif %}
                 </form>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <a href="{% url 'config_list' %}" class="btn btn-secondary mb-3">
+                    Back
+                </a>
             </div>
         </div>
     </div>

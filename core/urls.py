@@ -1,10 +1,10 @@
 from django.urls import path, register_converter
 from django.contrib import admin
 from .views import job_master_view, question_master_view,task_master_view,state_master_view,siac_master_view, index, get_master_results, job_list_view, job_detail_view , debug_view, task_list_view, task_detail_view, state_list_view, state_detail_view, siac_list_view, siac_detail_view, question_list_view, question_detail_view, config_list_view, config_detail_view, config_redirect_view, question_search_api
-from .views import config_list_view, config_create_view, config_update_view, config_detail_view, index, account_info, test_view
+from .views import config_list_view, config_create_view, config_update_view, config_detail_view, index, account_info, test_view, finalize_changelog
 from django.contrib.auth import views as auth_views
 
-from . import viewpage,updatepage
+from . import viewpage
 
 # Custom path converter for config_id
 class ConfigIDConverter:
@@ -94,11 +94,6 @@ urlpatterns = [
     path('config/search/', viewpage.config_search, name='config_search'),
     path('config/<config_id:pk>/', viewpage.config_detail, name='config_detail'),
     path('config/<config_id:pk>/', config_detail_view, name='config_detail'),
-    path('config/update/<config_id:pk>/', updatepage.config_update, name='config_update'),
-    path('question/update/<int:pk>/', updatepage.question_update, name='question_update'),
-    path('task/update/<int:pk>/', updatepage.task_update, name='task_update'),
-    path('state/update/<int:pk>/', updatepage.state_update, name='state_update'),
-    path('siac/update/<int:pk>/', updatepage.siac_update, name='siac_update'),
-    path('job/update/<int:pk>/', updatepage.job_update, name='job_update'),
+    path('finalize-changelog/', finalize_changelog, name='finalize_changelog'),
     path('test-changelog/', test_view, name='test_changelog'),
 ]

@@ -90,7 +90,6 @@ CREATE TABLE config_metas (
     is_active BOOLEAN,
     id VARCHAR(100) NOT NULL,
     config_id VARCHAR(255) NOT NULL PRIMARY KEY,
-    skip_trigger BOOLEAN DEFAULT FALSE
 );
 
 --changeset abhinav.srikanth:1747653901222-10
@@ -1152,3 +1151,20 @@ UPDATE config_data.config_metas SET question_id='-1', task_id='-1', job_id='-1',
 
 --changeset frontend:1747751958-8427
 UPDATE config_data.task_master SET conditions='["{}"]' WHERE task_id=11;
+
+--changeset frontend:1747819891-1745
+UPDATE config_data.config_metas SET question_id='-1', task_id='-1', job_id='-1', state_id='-1', parent_option_condition='{}', attributes='{}', is_active=TRUE, skip_trigger=TRUE, default_option='["test"]' WHERE config_id='-1#-1#-1#-1-2';
+
+--changeset frontend:1747822539-8415
+UPDATE config_data.config_metas SET question_id='-1', task_id='-1', job_id='-1', state_id='1', parent_option_condition='{}', attributes='{}', is_active=TRUE WHERE config_id='-1#1#-1#-1-1';
+
+--changeset frontend:1747823452-8198
+UPDATE config_data.config_metas SET question_id='-1', task_id='-1', job_id='-1', state_id='2', parent_option_condition='{}', attributes='{}', is_active=TRUE WHERE config_id='-1#2#-1#-1-1';
+--changeset frontend:1747830576-9581
+UPDATE config_data.job_master SET order_id=-3 WHERE job_id=-1;
+--changeset frontend:1747830626-9581
+UPDATE config_data.job_master SET order_id=-2 WHERE job_id=-1;
+--changeset sindhu.pasumarthy:1747846165514-1
+UPDATE config_data.question_master SET is_active=TRUE WHERE question_id=72;
+--changeset sindhu.pasumarthy:1747846165514-2
+INSERT INTO config_data.question_master (question_id, question_name, identifier, ui_element_type, possible_options, is_active, is_multi_select, default_option, order_id, source_category, attributes, is_master, created_at, updated_at) VALUES (163, NULL, NULL, 'RADIO_BUTTON', '{}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2025-05-21 22:35:48.268501+05:30, 2025-05-21 22:35:48.268501+05:30);

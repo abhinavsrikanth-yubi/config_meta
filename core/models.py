@@ -61,7 +61,6 @@ class ConfigMetas(models.Model):
     is_active = models.BooleanField(null=True)
     created_at = models.DateTimeField(null=True)
     updated_at = models.DateTimeField(null=True)
-    skip_trigger = models.BooleanField(default=False)
     # job_id_fk = models.IntegerField(null=True)
     # task_id_fk = models.IntegerField(null=True)
     # question_id_fk = models.IntegerField(null=True)

@@ -33,7 +33,17 @@
   {% endif %}
 </div>
 <div class="container py-5">
-    <div class="row mb-3">
+        {% if messages %}
+          <div class="container mt-2">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="row mb-3">
         <div class="col text-start">
             {% if user.is_superuser or user|has_group:"Product" %}
             <a href="{% url 'config_create' %}" class="btn btn-primary">+ Create Config</a>
@@ -69,6 +79,10 @@
                 </div>
             </form>
             <div id="config-list"></div>
+            <form method="post" action="{% url 'finalize_changelog' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Save all changes to dev</button>
+            </form>
             <nav>
                 <ul class="pagination justify-content-center" id="pagination"></ul>
             </nav>
@@ -118,7 +132,7 @@ function renderConfigList(configs) {
                     <td>${item.job_id}</td>
                     <td>
                         <a href="/config/${encodeURIComponent(item.id)}/" class="btn  btn-info btn-sm">View</a>
-                        {% if user.is_superuser or user|has_group:"product" %}
+                        {% if user.is_superuser or user|has_group:"Product" %}
                         <a href="/config/update/${encodeURIComponent(item.id)}/" class="btn btn-warning btn-sm">Update</a>
                         {% endif %}
                     </td>

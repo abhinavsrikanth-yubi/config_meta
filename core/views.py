@@ -14,8 +14,12 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
-from core.utils.liquibase_changelog import liquibase_changelog
 from core.utils.liquibase_changelog import LiquibaseChangelogMixin
+import os
+from django.conf import settings
+from threading import Lock
+from core.utils.liquibase_changelog import CHANGELOG_DIR
+import shutil
 
 
 @login_required
@@ -118,12 +122,14 @@ def job_master_view(request, pk=None):
                     messages.info(request, 'No edits made.')
                 else:
                     job_obj = form.save()
-                    mixin.append_liquibase_changeset('update', job_obj)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('update', job_obj, changed_fields, username=username, request=request)
                     messages.success(request, 'Job Master entry updated successfully!')
                 form = JobMasterForm(instance=job)
             else:
                 job_obj = form.save()
-                mixin.append_liquibase_changeset('insert', job_obj)
+                username = request.user.username if request.user.is_authenticated else 'frontend'
+                mixin.append_liquibase_changeset('insert', job_obj, username=username, request=request)
                 messages.success(request, 'Job Master entry created successfully!')
                 form = JobMasterForm()  # blank form after create
     else:
@@ -171,13 +177,15 @@ def task_master_view(request, pk=None):
                     messages.info(request, 'No edits made.')
                 else:
                     task_obj = form.save()
-                    mixin.append_liquibase_changeset('update', task_obj, changed_fields)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('update', task_obj, changed_fields, username=username, request=request)
                     messages.success(request, 'Task Master entry updated successfully!')
                 form = TaskMasterForm(instance=task)
             else:
                 # create
                 task_obj = form.save()
-                mixin.append_liquibase_changeset('insert', task_obj)
+                username = request.user.username if request.user.is_authenticated else 'frontend'
+                mixin.append_liquibase_changeset('insert', task_obj, username=username, request=request)
                 messages.success(request, 'Task Master entry created successfully!')
                 form = TaskMasterForm()  # blank form after create
     else:
@@ -220,13 +228,15 @@ def state_master_view(request, pk=None):
                     messages.info(request, 'No edits made.')
                 else:
                     state_obj = form.save()
-                    mixin.append_liquibase_changeset('update', state_obj, changed_fields)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('update', state_obj, changed_fields, username=username, request=request)
                     messages.success(request, 'State Master entry updated successfully!')
                 form = StateMasterForm(instance=state)
             else:
                 #create
                 state_obj = form.save()
-                mixin.append_liquibase_changeset('insert', state_obj)
+                username = request.user.username if request.user.is_authenticated else 'frontend'
+                mixin.append_liquibase_changeset('insert', state_obj, username=username, request=request)
                 messages.success(request, 'State Master entry created successfully!')
                 form = StateMasterForm()  # blank form after create
     else:
@@ -271,13 +281,15 @@ def siac_master_view(request, pk=None):
                     messages.info(request, 'No edits made.')
                 else:
                     siac_obj = form.save()
-                    mixin.append_liquibase_changeset('update', siac_obj, changed_fields)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('update', siac_obj, changed_fields, username=username, request=request)
                     messages.success(request, 'SIAC Master entry updated successfully!')
                 form = SiacMasterForm(instance=siac)
             else:
                 #create
                 siac_obj = form.save()
-                mixin.append_liquibase_changeset('insert', siac_obj)
+                username = request.user.username if request.user.is_authenticated else 'frontend'
+                mixin.append_liquibase_changeset('insert', siac_obj, username=username, request=request)
                 messages.success(request, 'SIAC Master entry created successfully!')
                 form = SiacMasterForm()  # blank form after create
     else:
@@ -321,13 +333,15 @@ def question_master_view(request, pk=None):
                     messages.info(request, 'No edits made.')
                 else:
                     question_obj = form.save()
-                    mixin.append_liquibase_changeset('update', question_obj, changed_fields)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('update', question_obj, changed_fields, username=username, request=request)
                     messages.success(request, 'Question Master entry updated successfully!')
                 form = QuestionMasterForm(instance=question)
             else:
                 #create
                 question_obj = form.save()
-                mixin.append_liquibase_changeset('insert', question_obj)
+                username = request.user.username if request.user.is_authenticated else 'frontend'
+                mixin.append_liquibase_changeset('insert', question_obj, username=username, request=request)
                 messages.success(request, 'Question Master entry created successfully!')
                 form = QuestionMasterForm()  # blank form after create
     else:
@@ -519,7 +533,7 @@ def config_create_view(request):
                 if ConfigMetas.objects.filter(config_id=config_id_str).exists():
                     duplicate_configs.append(config_id_str)
                     continue
-                ConfigMetas.objects.create(
+                config=ConfigMetas.objects.create(
                     config_id=config_id_str,
                     id=generated_id,
                     siac_id=siac_id,  # store as string
@@ -538,12 +552,12 @@ def config_create_view(request):
                     question_type=form.cleaned_data.get('question_type'),
                     attributes=form.cleaned_data.get('attributes'),
                     is_active=form.cleaned_data.get('is_active'),
-                    skip_trigger=form.cleaned_data.get('skip_trigger'),
                     created_at=now,
                     updated_at=now,
                 )
                 created_configs.append(config_id_str)
-                mixin.append_liquibase_changeset('insert', config)
+                username = request.user.username if request.user.is_authenticated else 'frontend'
+                mixin.append_liquibase_changeset('insert', config, username=username, request=request)
             if created_configs:
                 messages.success(request, f"Created configs: {', '.join(created_configs)}")
             if duplicate_configs:
@@ -649,7 +663,6 @@ def config_update_view(request, pk):
                         'question_type': form.cleaned_data.get('question_type'),
                         'attributes': form.cleaned_data.get('attributes'),
                         'is_active': form.cleaned_data.get('is_active'),
-                        'skip_trigger': form.cleaned_data.get('skip_trigger'),
                         'updated_at': now,
                     }
                 )
@@ -658,7 +671,8 @@ def config_update_view(request, pk):
                     obj.created_at = now
                     obj.save()
                     created_configs.append(config_id_str)
-                    mixin.append_liquibase_changeset('insert', obj)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('insert', obj, username=username, request=request)
                 else:
                     changed_fields = []
                     for field in form.changed_data:
@@ -666,7 +680,9 @@ def config_update_view(request, pk):
                         if hasattr(obj, field):
                             changed_fields.append(field)
                     updated_configs.append(config_id_str)
-                    mixin.append_liquibase_changeset('update', obj, changed_fields)
+                    username = request.user.username if request.user.is_authenticated else 'frontend'
+                    mixin.append_liquibase_changeset('update', obj, changed_fields, username=username, request=request)
+                    print("Session after changelog append:", request.session.items())
             # Remove configs for SIAC IDs not in the new list
             for old_config in base_configs_qs:
                 if old_config.siac_id not in updated_siac_ids:
@@ -710,6 +726,32 @@ def config_update_view(request, pk):
         'parent_response_items': parent_response_items,
         'questions': questions,
     })
+
+
+def finalize_changelog(request):
+    filename = request.session.get('changelog_filename')
+    epoch = request.session.get('changelog_epoch')
+    print("Epoch:", epoch)
+    if filename and epoch:
+        old_path = os.path.join(CHANGELOG_DIR, filename)
+        new_path = os.path.join(CHANGELOG_DIR, f"changelog-{epoch}.sql")
+        print("Old path:", old_path)
+        if old_path == new_path:
+            messages.warning(request, "Changelog is already finalized.")
+            return redirect('config_list')
+        try:
+            shutil.copyfile(old_path, new_path)
+            os.remove(old_path)
+            messages.success(request, "Changelog file created successfully!")
+        except Exception as e:
+            messages.error(request, f"Failed to rename changelog file: {e}")
+            print("Rename exception:", e)
+        for key in ['changelog_filename', 'changelog_epoch', 'changelog_counter']:
+            if key in request.session:
+                del request.session[key]
+    else:
+        messages.warning(request, "No changelog file found in session!")
+    return redirect('config_list')
 
 
 def debug_view(request):
