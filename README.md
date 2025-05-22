@@ -144,6 +144,150 @@ MIT License
 **For questions or contributions, please open an issue or pull request!**
 
 
+A robust Django-based system for managing configuration metadata, with automated Liquibase changelog generation, session-based changelog management, and advanced database change tracking.
+
+---
+
+## 🚀 Features
+
+- **Automated Liquibase Changelog Generation**
+  - Session-based SQL changelog files (per user, per session)
+  - Per-user master changelog file (accumulates all changes by user)
+  - Global `master.sql` (accumulates all changes across users)
+  - "Save all changes to dev" button to finalize and copy session changelogs
+
+- **Database Schema Modernization**
+  - PostgreSQL native array/JSON fields
+  - Auto-incrementing IDs for master entities
+  - Cleaned and simplified schema
+
+- **User-Friendly UI**
+  - Bootstrap 5 styled forms and tables
+  - Centered and context-aware action buttons
+  - Real-time error and success messages
+
+- **Security & Best Practices**
+  - Session-based tracking for changelogs
+  - Safe SQL value formatting and escaping
+  - Least-privilege database access
+
+---
+
+## 🏗️ Project Structure
+
+```
+config_meta/
+├── core/
+│   ├── models.py
+│   ├── forms.py
+│   ├── views.py
+│   ├── viewpage.py
+│   ├── utils/
+│   │   └── liquibase_changelog.py
+│   └── templates/
+│       └── viewpages/
+├── liquibase/
+│   └── changelog/
+│       ├── master.sql
+│       └── changelogfiles/
+│            ├── <user>-<epoch>.sql
+│            ├── <user>-master.sql
+│            └── changelog-<epoch>.sql
+├── manage.py
+└── README.md
+```
+
+---
+
+## ⚙️ Setup & Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd config_meta
+   ```
+
+2. **Create and activate a virtual environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure PostgreSQL settings in `settings.py`**
+
+5. **Apply migrations**
+   ```bash
+   python manage.py migrate
+   ```
+
+6. **Create a superuser**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+7. **Run the development server**
+   ```bash
+   python manage.py runserver
+   ```
+
+---
+
+## 🗂️ Liquibase Changelog Automation
+
+- **Session-based changelog files** are created automatically when you make changes through the UI.
+- **"Save all changes to dev"** button finalizes the session changelog and copies it to a timestamped file.
+- **Per-user master changelog files** (e.g., `username-master.sql`) accumulate all changes by that user.
+- **Global master.sql** (`liquibase/changelog/master.sql`) accumulates all changes for all users.
+
+---
+
+## 🛡️ Security & Best Practices
+
+- All SQL values are safely formatted and escaped.
+- Only authenticated users can perform changes.
+- Changelog files are session- and user-specific to prevent collisions.
+
+---
+
+## 📝 Development & Contribution
+
+- Use feature branches and submit pull requests.
+- Run tests before pushing changes.
+- Keep dependencies up to date.
+
+---
+
+## 🧪 Testing
+
+- Run all tests:
+  ```bash
+  python manage.py test
+  ```
+
+---
+
+## 💡 Tips
+
+- For production, use a WSGI/ASGI server (not Django’s dev server).
+- Regularly backup your `liquibase/changelog` directory.
+- Review generated changelogs before applying them to production databases.
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+**For questions or contributions, please open an issue or pull request!**
+
+
 ## Overview
 This project is a robust and flexible Django web application for managing complex configuration metadata across multiple entities. It features advanced user authentication, dynamic configuration forms, granular permissions, and a modern, user-friendly interface.
 
