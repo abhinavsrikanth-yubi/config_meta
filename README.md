@@ -21,32 +21,6 @@ Session-based file handling
 Safe SQL and escaping
 Least-privilege DB access
 
-
-
-Directory Structure:
-config_meta/
-├── core/
-│   ├── models.py
-│   ├── forms.py
-│   ├── views.py
-│   ├── viewpage.py
-│   ├── utils/
-│   │   └── liquibase_changelog.py
-│   └── templates/
-│       ├── createpages/
-│       ├── viewpages/
-│       └── detailing/
-├── liquibase/
-│   └── changelog/
-│       ├── master.sql
-│       └── changelogfiles/
-│           ├── <username>-<epoch>.sql
-│           ├── <username>-master.sql
-│           └── changelog-<epoch>.sql
-├── manage.py
-└── README.md
-
-
 Quick Start:
 1. Install Dependencies:
 python3 -m venv venv
