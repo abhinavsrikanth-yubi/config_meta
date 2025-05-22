@@ -38,8 +38,15 @@
                 <a href="{% url 'task_create' %}" class="btn btn-primary">+ Create Task</a>
                 {% endif %}
             </div>
-        </div>
-    
+            {% if messages %}
+  <div class="container mt-2">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    {% endfor %}
+  </div>
+{% endif %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
@@ -50,6 +57,14 @@
                 <div class="card-body position-relative">
                     <input type="text" id="task-search" class="form-control mb-3" placeholder="Search task ID, name, etc...">
                     <div id="task-list"></div>
+                    {% if user.is_superuser or user|has_group:"Product" %}
+                    <div class="text-center my-3">
+                        <form method="post" action="{% url 'finalize_changelog' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Save all changes to dev</button>
+                        </form>
+                    {% endif %}
+                    </div>
                     <nav>
                         <ul class="pagination justify-content-center" id="pagination"></ul>
                     </nav>

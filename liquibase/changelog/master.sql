@@ -1166,5 +1166,19 @@ UPDATE config_data.job_master SET order_id=-3 WHERE job_id=-1;
 UPDATE config_data.job_master SET order_id=-2 WHERE job_id=-1;
 --changeset sindhu.pasumarthy:1747846165514-1
 UPDATE config_data.question_master SET is_active=TRUE WHERE question_id=72;
---changeset sindhu.pasumarthy:1747846165514-2
-INSERT INTO config_data.question_master (question_id, question_name, identifier, ui_element_type, possible_options, is_active, is_multi_select, default_option, order_id, source_category, attributes, is_master, created_at, updated_at) VALUES (163, NULL, NULL, 'RADIO_BUTTON', '{}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2025-05-21 22:35:48.268501+05:30, 2025-05-21 22:35:48.268501+05:30);
+--changeset gokulanatha.balaji:1747894002558-1
+UPDATE config_data.task_master SET task_type='Non' WHERE task_id=-1;
+--changeset gokulanatha.balaji:1747894002558-2
+UPDATE config_data.task_master SET task_type='None' WHERE task_id=-1;
+--changeset gokulanatha.balaji:1747894237433-1
+UPDATE config_data.task_master SET mandatory=FALSE WHERE task_id=-1;
+--changeset gokulanatha.balaji:1747894588699-1
+UPDATE config_data.job_master SET job_name='Non' WHERE job_id=-1;
+--changeset gokulanatha.balaji:1747894588699-2
+UPDATE config_data.job_master SET job_name='None' WHERE job_id=-1;
+--changeset gokulanatha.balaji:1747894698455-1
+UPDATE config_data.task_master SET conditions='[]' WHERE task_id=2;
+--changeset gokulanatha.balaji:1747894698455-2
+UPDATE config_data.task_master SET mandatory=TRUE WHERE task_id=2;
+--changeset gokulanatha.balaji:1747894698455-3
+UPDATE config_data.state_master SET description='test' WHERE state_id=2;

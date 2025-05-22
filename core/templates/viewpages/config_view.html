@@ -79,10 +79,15 @@
                 </div>
             </form>
             <div id="config-list"></div>
-            <form method="post" action="{% url 'finalize_changelog' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-success">Save all changes to dev</button>
-            </form>
+
+            {% if user.is_superuser or user|has_group:"Product" %}
+            <div class="text-center my-3">
+                <form method="post" action="{% url 'finalize_changelog' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Save all changes to dev</button>
+                </form>
+            </div>
+            {% endif %}
             <nav>
                 <ul class="pagination justify-content-center" id="pagination"></ul>
             </nav>

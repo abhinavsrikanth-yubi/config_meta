@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 def question_search(request):
     q = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
-    questions = QuestionMaster.objects.all()
+    questions = QuestionMaster.objects.all().order_by('question_id')
     if q:
         questions = questions.filter(
             Q(question_id__icontains=q) | Q(question_name__icontains=q)
@@ -35,7 +35,7 @@ def question_detail(request, pk):
     return render(request, 'detailing/question_detail.html', {'question': question})
 
 def question_view(request):
-    questions = QuestionMaster.objects.all()
+    questions = QuestionMaster.objects.all().order_by('question_id')
     return render(request, 'viewpages/question_view.html', {'questions': questions})
 
 
@@ -80,7 +80,7 @@ def job_view(request):
 def state_search(request):
     q = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
-    states = StateMaster.objects.all()
+    states = StateMaster.objects.all().order_by('state_id')
     if q:
         states = states.filter(
             Q(state_id__icontains=q) | Q(state_name__icontains=q)
@@ -108,13 +108,13 @@ def state_detail(request, pk):
     return render(request, 'detailing/state_detail.html', {'state': state})
 
 def state_view(request):
-    states = StateMaster.objects.all()
+    states = StateMaster.objects.all().order_by('state_id')
     return render(request, 'viewpages/state_view.html', {'states': states})
 
 def task_search(request):
     q = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
-    tasks = TaskMaster.objects.all()
+    tasks = TaskMaster.objects.all().order_by('task_id')
     if q:
         tasks = tasks.filter(
             Q(task_id__icontains=q) | Q(task_name__icontains=q)
@@ -142,7 +142,7 @@ def task_detail(request, pk):
     return render(request, 'detailing/task_detail.html', {'task': task})
 
 def task_view(request):
-    tasks = TaskMaster.objects.all()
+    tasks = TaskMaster.objects.all().order_by('task_id')
     return render(request, 'viewpages/task_view.html', {'tasks': tasks})
 
 def siac_search(request):
@@ -153,7 +153,7 @@ def siac_search(request):
             Q(siac_id__icontains=q)
         )
     else:
-        qs=SiacMaster.objects.all()
+        qs=SiacMaster.objects.all().order_by('siac_id')
     page = int(request.GET.get('page', 1))
     paginator = Paginator(qs, 10)
     page_obj = paginator.get_page(page)
@@ -171,7 +171,7 @@ def siac_detail(request,pk):
     return render(request, 'detailing/siac_detail.html', {'siac': siac})
     
 def siac_view(request):
-    siacs = SiacMaster.objects.all()
+    siacs = SiacMaster.objects.all().order_by('siac_id')
     return render(request, 'viewpages/siac_view.html', {'siacs': siacs})
 
 def config_search(request):

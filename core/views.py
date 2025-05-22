@@ -751,7 +751,8 @@ def finalize_changelog(request):
                 del request.session[key]
     else:
         messages.warning(request, "No changelog file found in session!")
-    return redirect('config_list')
+    next_url=request.META.get('HTTP_REFERER')
+    return redirect(next_url)
 
 
 def debug_view(request):
