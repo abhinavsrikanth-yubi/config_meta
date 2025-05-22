@@ -1,4 +1,4 @@
-# Django Configuration Metadata Management System
+# Config Metadata Management System
 
 A robust Django-based system for managing configuration metadata, with automated Liquibase changelog generation, session-based changelog management, and advanced database change tracking.
 
