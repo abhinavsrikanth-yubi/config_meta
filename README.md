@@ -1,118 +1,98 @@
-# Django Configuration Metadata Management System
+Django Configuration Metadata Management System
+Overview:
+This project is a Django-based system for managing configuration metadata, with automated Liquibase changelog generation and advanced session/user-based tracking. It is designed for seamless database change management, supporting both per-session and per-user changelog workflows, and appending all changes to a global master changelog.
 
-## Overview
-This project is a robust and flexible Django web application for managing complex configuration metadata across multiple entities. It features advanced user authentication, dynamic configuration forms, granular permissions, and a modern, user-friendly interface.
+Features:
+Automated Liquibase Changelog Generation
+Session-based dummy changelog files (e.g., username-epoch.sql)
+Per-user master changelog files (e.g., username-master.sql)
+Global master.sql for all changes across all users/sessions
+Idempotent and Accurate Migration Tracking
+User-friendly UI
+"Save all changes to dev" button (visible only when relevant)
+Bootstrap-styled and responsive
+Django messages for feedback on all actions
+Dynamic, Modular Model Support
+Handles multiple master entities (Job, Task, State, SIAC, Question, Config)
+Auto-incrementing IDs
+PostgreSQL JSON/Array field support
+Security & Production-Readiness
+Session-based file handling
+Safe SQL and escaping
+Least-privilege DB access
 
----
 
-## Features
-- **Configuration Management**: Create, update, and manage metadata for Jobs, Tasks, States, SIACs, Questions, and Configs.
-- **Dynamic Forms**: Advanced data transformation and validation for configuration input.
-- **User Authentication**: Secure login, logout, and password reset flows using Django's built-in authentication system.
-- **Account Management**: Account info modal with password reset, group display, and email notifications for account changes.
-- **Role-Based Permissions**: Group-based access control (Product, Developer, etc.), with granular view/edit permissions.
-- **Responsive UI**: Clean Bootstrap 5 interface, modals, and dropdowns for settings and account management.
-- **Security**: Least privilege, enforced password complexity, server-side permission checks, and session management.
-- **Extensible**: Easily add new configuration modules or user roles.
 
----
-
-## Tech Stack
-- Python 3.9+
-- Django 4.2.x
-- Bootstrap 5.3.x
-- Vanilla JavaScript
-
----
-
-## Setup Instructions
-
-1. **Clone the repository**
-    ```bash
-    git clone <https://github.com/abhinavsrikanth-yubi/config_meta>
-    cd <repo-folder>
-    ```
-
-2. **Create and activate a virtual environment**
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
-
-3. **Install dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. **Configure environment variables**
-    - Copy `.env.example` to `.env` and set your environment-specific variables (e.g., `SECRET_KEY`, `EMAIL_HOST`, etc.)
-
-5. **Apply migrations**
-    ```bash
-    python manage.py migrate
-    ```
-
-6. **Create a superuser**
-    ```bash
-    python manage.py createsuperuser
-    ```
-
-7. **Run the development server**
-    ```bash
-    python manage.py runserver
-    ```
-
-8. **Access the app**
-    - Visit [http://localhost:8000/](http://localhost:8000/) in your browser.
-
----
-
-## Usage Notes
-- Use the gear/settings icon (top-right) for account management and logout.
-- Only authenticated users can access configuration pages.
-- Group-based permissions restrict access to certain modules and actions.
-- Password changes require re-login for security.
-- All view pages include the account info modal and settings dropdown for a unified experience.
-
----
-
-## Folder Structure
-```
+Directory Structure:
 config_meta/
 ├── core/
-│   ├── templates/
-│   │   ├── index.html
-│   │   ├── account_info_modals_and_js.html
-│   │   └── viewpages/
-│   │       ├── job_view.html
-│   │       ├── state_view.html
-│   │       ├── siac_view.html
-│   │       ├── question_view.html
-│   │       ├── config_view.html
-│   │       └── task_view.html
-│   ├── views.py
-│   ├── forms.py
 │   ├── models.py
-│   ├── urls.py
-│   └── ...
-├── loanos_project/
-│   └── settings.py
-├── requirements.txt
+│   ├── forms.py
+│   ├── views.py
+│   ├── viewpage.py
+│   ├── utils/
+│   │   └── liquibase_changelog.py
+│   └── templates/
+│       ├── createpages/
+│       ├── viewpages/
+│       └── detailing/
+├── liquibase/
+│   └── changelog/
+│       ├── master.sql
+│       └── changelogfiles/
+│           ├── <username>-<epoch>.sql
+│           ├── <username>-master.sql
+│           └── changelog-<epoch>.sql
+├── manage.py
 └── README.md
-```
 
----
 
-## Security & Best Practices
-- Do **not** expose your `SECRET_KEY` or sensitive credentials.
-- Use environment variables for all secrets and email credentials.
-- Regularly review user group assignments and permissions.
-- Monitor authentication and account activity logs.
-- Keep Django and all dependencies up to date.
+Quick Start:
+1. Install Dependencies:
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
----
+2. Configure Database:
+Set up PostgreSQL and update your settings.py with DB credentials.
 
-## Contribution
-Pull requests and feature suggestions are welcome! Please open an issue to discuss any major changes.
+3. Run the Server:
+python manage.py runserver
 
----
+4. Liquibase Integration:
+Ensure Liquibase CLI is installed (liquibase --version).
+
+5. To apply all changes:
+liquibase --changeLogFile=liquibase/changelog/master.sql update
+
+6. Workflow:
+Make changes (create/update) to master entities via the Django UI.
+
+7. Changelog files:
+Changes are appended to a session-based dummy file (username-epoch.sql).
+All changes are also appended to the per-user master (username-master.sql) and the global master.sql.
+
+8. Finalize session:
+Click "Save all changes to dev" to finalize and archive the session file (changelog-epoch.sql).
+Dummy file is deleted after finalization.
+All changes are always available in the per-user and global master files.
+
+9. UI Highlights:
+Messages: Success, warning, and error messages are shown at the top of each page.
+"Save all changes to dev": Centered button, only visible to authorized users/groups.
+Lists: All entity lists are sorted in descending order by primary key.
+Security & Best Practices
+All SQL is safely generated and escaped.
+Changelog session variables are managed per user/session.
+Sensitive config (like DB credentials) should be managed using environment variables.
+
+10. Troubleshooting: 
+Changelog not found: Ensure you have made a change in the current session before clicking "Save all changes to dev".
+SQL errors in Liquibase: Check that all generated SQL values (especially JSON and datetime) are properly quoted and formatted.
+File permissions: Ensure your Django process has write access to the changelogfiles directory.
+
+11. Contributing
+Fork the repo and create your feature branch.
+Commit your changes.
+Push to the branch.
+Open a Pull Request.
