@@ -27,6 +27,18 @@ class QuestionMasterForm(forms.ModelForm):
         ('SINGLE_SELECT', 'SINGLE_SELECT'),
         ('MULTI_SELECT', 'MULTI_SELECT'),
     ]
+    IS_ACTIVE_CHOICES = [
+        ('YES', 'YES'),
+        ('NO', 'NO'),
+        ('UNKNOWN', 'UNKNOWN'),
+    ]
+    is_active = forms.ChoiceField(
+        choices=IS_ACTIVE_CHOICES,
+        initial='YES',
+        required=True,
+        label="Is Active"
+    )
+
     ui_element_type=forms.ChoiceField(
         choices=UI_ELEMENT_TYPE_CHOICES,
         required=True,
@@ -55,9 +67,11 @@ class QuestionMasterForm(forms.ModelForm):
         model=QuestionMaster
         fields=[
             'question_id',
+            'question_name',
+            'is_master',
             'is_active', 'is_multi_select', 'default_option', 'identifier',
-            'question_name', 'ui_element_type', 'possible_options',
-            'attributes', 'is_master'
+            'ui_element_type', 'possible_options',
+            'attributes', 
         ]
 
 class JobMasterForm(forms.ModelForm):
@@ -287,18 +301,21 @@ class ConfigMetaForm(forms.ModelForm):
     category = forms.ChoiceField(
         choices=CATEGORY_CHOICES,
         required=True,
+        initial='ASSET CATEGORY',
         label='Category',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     entity_type = forms.ChoiceField(
         choices=ENTITY_TYPE_CHOICES,
         required=True,
+        initial='INVESTOR',
         label='Entity Type',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     question_type = forms.ChoiceField(
         choices=QUESTION_TYPE_CHOICES,
         required=True,
+        initial='STATIC',
         label='Question Type',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -558,7 +575,6 @@ class ConfigMetaForm(forms.ModelForm):
             'entity_type', 'question_type', 'attributes', 'is_active'
         ]
         widgets = {
-            
             'parent_option_condition': forms.Textarea(attrs={'class': 'form-control', 'required': False}),
             'parent_question_operator': forms.TextInput(attrs={'class': 'form-control', 'required': False}),
             'category': forms.TextInput(attrs={'class': 'form-control', 'required': False}),

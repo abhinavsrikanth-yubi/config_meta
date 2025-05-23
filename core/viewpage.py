@@ -150,7 +150,7 @@ def siac_search(request):
     results = []
     if q:
         qs = SiacMaster.objects.filter(
-            Q(siac_id__icontains=q)
+            Q(siac_id__icontains=q) | Q(scheme__icontains=q) | Q(sector__icontains=q)
         )
     else:
         qs=SiacMaster.objects.all().order_by('siac_id')
@@ -160,6 +160,8 @@ def siac_search(request):
     results = [
         {
             'id': obj.siac_id,
+            'scheme': obj.scheme,
+            'sector': obj.sector,
             'label': f'{obj.siac_id} '
         }
         for obj in page_obj

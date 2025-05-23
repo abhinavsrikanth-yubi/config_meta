@@ -99,6 +99,8 @@ function rendersiacList(siacs) {
         <thead>
             <tr>
                 <th>Siac ID</th>
+                <th>Scheme</th>
+                <th>Sector</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -106,6 +108,8 @@ function rendersiacList(siacs) {
             ${siacs.map(item => `
                 <tr>
                     <td>${item.label}</td>
+                    <td>${item.scheme}</td>
+                    <td>${item.sector}</td>
                     <td>
                         <a href="/siac/${item.id}/" class="btn btn-sm btn-primary">View</a>
                         {% if user.is_superuser or user|has_group:"Product" %}
