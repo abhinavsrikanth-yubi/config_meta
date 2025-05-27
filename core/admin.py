@@ -30,8 +30,8 @@ class SiacMasterAdmin(admin.ModelAdmin):
 
 @admin.register(ConfigMetas)
 class ConfigMetasAdmin(admin.ModelAdmin):
-    list_display = ('config_id', 'state_id', 'question_id', 'siac_id', 'task_id', 'job_id', 'entity_type')
-    search_fields = ('config_id', 'state_id', 'question_id', 'siac_id')
+    list_display = ('id', 'state_id', 'question_id', 'siac_id', 'task_id', 'job_id', 'entity_type')
+    search_fields = ('id', 'state_id', 'question_id', 'siac_id')
     list_filter = ('entity_type', 'is_active')
 
     # def has_change_permission(self, request, obj=None):

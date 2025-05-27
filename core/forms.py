@@ -319,8 +319,7 @@ class ConfigMetaForm(forms.ModelForm):
         label='Question Type',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    
-    config_id = forms.CharField(
+    id = forms.CharField(
         label='Config ID',
         required=False,
         widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
@@ -379,8 +378,8 @@ class ConfigMetaForm(forms.ModelForm):
             self.initial['siac_id'] = str(self.instance.siac_id)
             self.fields['siac_id'].initial = str(self.instance.siac_id)
         if self.instance and self.instance.pk:
-            self.fields['config_id'].initial = self.instance.config_id
-            self.fields['config_id'].disabled = True
+            self.fields['id'].initial = self.instance.id
+            self.fields['id'].disabled = True
             self.fields['question_id'].initial = self.instance.question_id
             self.fields['state_id'].initial = self.instance.state_id
             self.fields['job_id'].initial = self.instance.job_id
@@ -428,15 +427,6 @@ class ConfigMetaForm(forms.ModelForm):
         widget=forms.Textarea(attrs={'class': 'form-control'})
     )
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     if self.instance and self.instance.pk:
-    #         self.fields['config_id'].initial = self.instance.config_id
-    #         self.fields['config_id'].disabled = True
-    #         if isinstance(self.instance.siac_id, list):
-    #             self.fields['siac_id'].initial = ', '.join(map(str, self.instance.siac_id))
-    #         if isinstance(self.instance.possible_options, list):
-    #             self.fields['possible_options'].initial = ', '.join(self.instance.possible_options)
 
     def clean_possible_options_for_rendering(self):
         data = self.cleaned_data['possible_options']
@@ -569,7 +559,7 @@ class ConfigMetaForm(forms.ModelForm):
     class Meta:
         model = ConfigMetas
         fields = [
-            'config_id', 'question_id', 'task_id', 'job_id', 'state_id',
+            'id', 'question_id', 'task_id', 'job_id', 'state_id',
             'siac_id', 'possible_options', 'parent_option_condition',
             'parent_question_operator', 'category', 'enable_task_response',
             'entity_type', 'question_type', 'attributes', 'is_active'

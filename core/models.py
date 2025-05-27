@@ -41,8 +41,7 @@ class JobMaster(models.Model):
 
 
 class ConfigMetas(models.Model):
-    id = models.CharField(max_length=100)
-    config_id = models.CharField(max_length=100,  primary_key=True)
+    id = models.CharField(max_length=100, primary_key=True)
     parent_question_operator = models.CharField(max_length=255, null=True)
     siac_id = models.CharField(max_length=255, null=True)
     default_option = models.JSONField(blank=True, null=True)
@@ -71,29 +70,7 @@ class ConfigMetas(models.Model):
         if self.entity_type:
             self.entity_type = self.entity_type.upper()
         super().save(*args, **kwargs)
-    # def save(self, *args, **kwargs):
-    #     update_fields = kwargs.get('update_fields', None)
-
-    #     # Only set id/config_id if not a partial update or those fields are being updated
-    #     if not update_fields or 'id' in update_fields or 'config_id' in update_fields:
-    #         self.id = f"{self.question_id}#{self.state_id}#{self.task_id}#{self.job_id}"
-    #         if self.siac_id:
-    #             self.config_id = f"{self.id}-{str(self.siac_id)}"
-    #             self.config_id = self.config_id.replace('##-1#', '#')
-    #             self.config_id = self.config_id.replace('###-', '#')
-
-    #     now_utc = timezone.now()
-    #     now_india = now_utc.astimezone(INDIA_TZ)
-
-    #     # Only set created_at if not a partial update or it's being updated
-    #     if (not update_fields or 'created_at' in update_fields) and not self.created_at:
-    #         self.created_at = now_india
-    #     # Always set updated_at unless it's a partial update and not being updated
-    #     if not update_fields or 'updated_at' in update_fields:
-    #         self.updated_at = now_india
-
-    #     super().save(*args, **kwargs)
-
+    
     class Meta:
         managed = False
         db_table = 'config_data"."config_metas'

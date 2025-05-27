@@ -178,9 +178,9 @@ def siac_view(request):
 
 def config_search(request):
     page = int(request.GET.get('page', 1))
-    configs = ConfigMetas.objects.all().order_by('config_id')
+    configs = ConfigMetas.objects.all().order_by('id')
 
-    config_id = request.GET.get('config_id', '')
+    id = request.GET.get('id', '')
     state = request.GET.get('state', '')
     question = request.GET.get('question', '')
     siac = request.GET.get('siac', '')
@@ -188,8 +188,8 @@ def config_search(request):
     job = request.GET.get('job', '')
 
     # Only search by IDs (not names)
-    if config_id:
-        configs = configs.filter(config_id__icontains=config_id)
+    if id:
+        configs = configs.filter(id__icontains=id)
     if state:
         state_ids = list(StateMaster.objects.filter(state_name__icontains=state).values_list('state_id', flat=True))
         configs = configs.filter(Q(state_id__icontains=state) | Q(state_id__in=state_ids))
@@ -214,7 +214,7 @@ def config_search(request):
         siac = SiacMaster.objects.filter(siac_id=config.siac_id).first()
 
         results.append({
-            'id': config.config_id,
+            'id': config.id,
             'question_id': config.question_id,
             'state_id': config.state_id,
             'task_id': config.task_id,
@@ -236,9 +236,9 @@ def config_search(request):
 
 
 def config_detail(request,pk):
-    config = get_object_or_404(ConfigMetas, config_id=pk)
+    config = get_object_or_404(ConfigMetas, id=pk)
     return render(request, 'detailing/config_detail.html', {'config': config})
 
 def config_view(request):
-    configs = ConfigMetas.objects.all().order_by('config_id')
+    configs = ConfigMetas.objects.all().order_by('id')
     return render(request, 'viewpages/config_view.html', {'configs': configs})

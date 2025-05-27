@@ -25,7 +25,7 @@ class SignedIntConverter:
         return str(value)
 
 # Register the custom converters
-register_converter(ConfigIDConverter, 'config_id')
+register_converter(ConfigIDConverter, 'id')
 register_converter(SignedIntConverter, 'signedint')
 
 urlpatterns = [
@@ -68,8 +68,8 @@ urlpatterns = [
     path('config/', config_redirect_view),  # <-- This must come BEFORE more specific config routes!
     path('config/view/', config_list_view, name='config_list'),
     path('config/create/', config_create_view, name='config_create'),
-    path('config/update/<config_id:pk>/', config_update_view, name='config_update'),
-    path('config/<config_id:pk>/', config_detail_view, name='config_detail'),
+    path('config/update/<id:pk>/', config_update_view, name='config_update'),
+    path('config/<id:pk>/', config_detail_view, name='config_detail'),
     path('config/search/', viewpage.config_search, name='config_search'),
     # Debug
     path('debug/', debug_view, name='debug'),
@@ -92,8 +92,8 @@ urlpatterns = [
     # path('config/view/', viewpage.config_view, name='config_view'),
     path('config/view/', config_list_view, name='config_list'),
     path('config/search/', viewpage.config_search, name='config_search'),
-    path('config/<config_id:pk>/', viewpage.config_detail, name='config_detail'),
-    path('config/<config_id:pk>/', config_detail_view, name='config_detail'),
+    path('config/<id:pk>/', viewpage.config_detail, name='config_detail'),
+    path('config/<id:pk>/', config_detail_view, name='config_detail'),
     path('finalize-changelog/', finalize_changelog, name='finalize_changelog'),
     path('test-changelog/', test_view, name='test_changelog'),
 ]

@@ -360,7 +360,7 @@ def config_list_view(request):
     # (Unchanged main view for initial load)
     siac = request.GET.get('siac', '').strip()
     state = request.GET.get('state', '').strip()
-    config_id = request.GET.get('config_id', '').strip()
+    id = request.GET.get('id', '').strip()
     question_id = request.GET.get('question_id', '').strip()
     task_id = request.GET.get('task_id', '').strip()
     job_id = request.GET.get('job_id', '').strip()
@@ -370,8 +370,8 @@ def config_list_view(request):
         configs = configs.filter(siac_id__icontains=siac)
     if state:
         configs = configs.filter(state_id__icontains=state)
-    if config_id:
-        configs = configs.filter(config_id__icontains=config_id)
+    if id:
+        configs = configs.filter(id__icontains=id)
     if question_id:
         configs = configs.filter(question_id__icontains=question_id)
     if task_id:
@@ -379,8 +379,8 @@ def config_list_view(request):
     if job_id:
         configs = configs.filter(job_id__icontains=job_id)
 
-    configs = configs.exclude(config_id__contains='None').exclude(config_id__isnull=True).exclude(config_id='')
-    configs = configs.order_by('config_id')
+    configs = configs.exclude(id__contains='None').exclude(id__isnull=True).exclude(id='')
+    configs = configs.order_by('id')
     paginator = Paginator(configs, 10)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
@@ -391,7 +391,7 @@ def config_list_view(request):
         'search': {
             'siac': siac,
             'state': state,
-            'config_id': config_id,
+            'id': id,
             'question_id': question_id,
             'task_id': task_id,
             'job_id': job_id,
@@ -443,7 +443,7 @@ def config_search_api(request):
     question_id = request.GET.get('question_id', '').strip()
     task_id = request.GET.get('task_id', '').strip()
     job_id = request.GET.get('job_id', '').strip()
-    config_id = request.GET.get('config_id', '').strip()
+    id = request.GET.get('id', '').strip()
     page = int(request.GET.get('page', 1))
 
     configs = ConfigMetas.objects.all()
@@ -463,10 +463,10 @@ def config_search_api(request):
     if job_id:
         configs = configs.filter(job_id=int(job_id))
     # Config ID: string match
-    if config_id:
-        configs = configs.filter(config_id=config_id)
-    configs = configs.exclude(config_id__contains='None').exclude(config_id__isnull=True).exclude(config_id='')
-    configs = configs.order_by('config_id')
+    if id:
+        configs = configs.filter(id__icontains=id)
+    configs = configs.exclude(id__contains='None').exclude(id__isnull=True).exclude(id='')
+    configs = configs.order_by('id')
     paginator = Paginator(configs, 10)
     page_obj = paginator.get_page(page)
 
@@ -475,10 +475,10 @@ def config_search_api(request):
         siac_val = config.siac_id
         if isinstance(siac_val, list):
             siac_val = ", ".join(map(str, siac_val))
-        config_id_val = getattr(config, 'config_id', None)
-        if config_id_val and isinstance(config_id_val, str) and config_id_val.strip():
+        id_val = getattr(config, 'id', None)
+        if id_val and isinstance(id_val, str) and id_val.strip():
             results.append({
-                "config_id": config_id_val,
+                "id": id_val,
                 "state_id": config.state_id,
                 "siac_id": siac_val,
                 "question_id": config.question_id,
@@ -494,7 +494,7 @@ def config_search_api(request):
         return HttpResponseForbidden("You do not have permission to create configs.")
 @login_required
 def config_detail_view(request, pk):
-    config = get_object_or_404(ConfigMetas, config_id=pk)
+    config = get_object_or_404(ConfigMetas, id=pk)
     return render(request, 'detailing/config_detail.html', {'config': config})
 
 @user_passes_test(is_product)
@@ -530,12 +530,11 @@ def config_create_view(request):
             now = timezone.now()
             for siac_id in siac_ids:
                 config_id_str = f"{generated_id}-{siac_id}"
-                if ConfigMetas.objects.filter(config_id=config_id_str).exists():
+                if ConfigMetas.objects.filter(id=config_id_str).exists():
                     duplicate_configs.append(config_id_str)
                     continue
                 config=ConfigMetas.objects.create(
-                    config_id=config_id_str,
-                    id=generated_id,
+                    id=config_id_str,
                     siac_id=siac_id,  # store as string
                     state_id=state_id,
                     question_id=question_id,
@@ -592,7 +591,7 @@ def config_create_view(request):
 @login_required
 def config_update_view(request, pk):
     questions = QuestionMaster.objects.all()
-    config = get_object_or_404(ConfigMetas, config_id=pk)
+    config = get_object_or_404(ConfigMetas, id=pk)
     parent_response_items={}
     if config.parent_response_condition:
         for qid, responses in config.parent_response_condition.items():
@@ -644,7 +643,7 @@ def config_update_view(request, pk):
             for siac_id in siac_ids:
                 config_id_str = f"{generated_id}-{siac_id}"
                 obj, created = ConfigMetas.objects.update_or_create(
-                    config_id=config_id_str,
+                    id=config_id_str,
                     defaults={
                         'id': generated_id,
                         'siac_id': siac_id,
@@ -764,7 +763,7 @@ def debug_view(request):
         question_id=question_id,
         job_id=job_id,
         task_id=task_id,
-        config_id=config_id  # Store the generated config ID
+        id=config_id  # Store the generated config ID
     messages.success(request, 'Configurations created successfully for the given input!')
     return redirect('config_data_view')
     
