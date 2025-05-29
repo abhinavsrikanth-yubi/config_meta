@@ -681,7 +681,7 @@ def config_update_view(request, pk):
                     updated_configs.append(config_id_str)
                     username = request.user.username if request.user.is_authenticated else 'frontend'
                     mixin.append_liquibase_changeset('update', obj, changed_fields, username=username, request=request)
-                    print("Session after changelog append:", request.session.items())
+                    # print("Session after changelog append:", request.session.items())
             # Remove configs for SIAC IDs not in the new list
             for old_config in base_configs_qs:
                 if old_config.siac_id not in updated_siac_ids:

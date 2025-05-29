@@ -138,14 +138,21 @@ class LiquibaseChangelogMixin:
         if val is None:
             return 'NULL'
         if isinstance(val, str):
-            return f"'{val}'"
+            if val.strip() == '' or val.strip() in ['{}', '[]']:
+                return 'NULL'
+            safe_val = val.replace("'", "''")
+            return f"'{safe_val}'"
         if isinstance(val, bool):
             return 'TRUE' if val else 'FALSE'
         if isinstance(val, list):
-            return f"'{json.dumps(val)}'"
+            if not val:
+                return 'NULL'
+            return json.dumps(val)  # <--- NO single quotes!
         if isinstance(val, dict):
-            return f"'{json.dumps(val)}'"
-        if isinstance(val, datetime.datetime):
+            if not val:
+                return 'NULL'
+            return json.dumps(val)  # <--- NO single quotes!
+        if isinstance(val, (datetime.datetime, datetime.date)):
             return f"'{val.isoformat(sep=' ')}'"
         return str(val)
 
